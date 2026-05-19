@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:al_nawaras/view/payment/payment_success_view.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../config/api_constants.dart';
 import '../../generated/l10n.dart';
@@ -50,7 +49,6 @@ class _PaymentViewState extends State<PaymentView> {
   void initState() {
     super.initState();
     _paymobController = Get.put(PaymobController());
-    _paymobController.fetchPaymobSettings();
   }
 
   @override
@@ -140,6 +138,19 @@ class _PaymentViewState extends State<PaymentView> {
               ),
               _buildStickyFooter(context, width, height),
             ],
+          ),
+          GetBuilder<PaymobController>(
+            builder: (controller) {
+              if (controller.isLoading) {
+                return Container(
+                  color: Colors.black26,
+                  child: const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
           ),
           const DraggableHelpButton(),
         ],
@@ -242,84 +253,6 @@ class _PaymentViewState extends State<PaymentView> {
     );
   }
 
-  Future<void> _confirmPayment(String transactionId, String totalStr) async {
-    try {
-      final storage = GetStorage();
-      final token = storage.read('token');
-
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      };
-
-      final Map<String, dynamic> requestBody = {
-        "booking_id": widget.bookingId.toString(),
-        "payment_gateway": "paymob",
-        "payment_reference": transactionId
-      };
-
-      debugPrint('\n--- API REQUEST (payment/confirm) ---');
-      debugPrint('URL: ${ApiConstants.paymentConfirm}');
-      debugPrint('Body: $requestBody');
-
-      final response = await BaseClient.dio.post(
-        ApiConstants.paymentConfirm,
-        data: requestBody,
-        options: Options(
-          headers: headers,
-          contentType: Headers.formUrlEncodedContentType,
-        ),
-      );
-
-      debugPrint('--- API RESPONSE (payment/confirm) ---');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Data: ${response.data}');
-
-      if ((response.statusCode == 200 || response.statusCode == 201) &&
-          response.data != null &&
-          (response.data['status'] == true ||
-              response.data['status'] == 200 ||
-              response.data['status'] == "success")) {
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => PaymentSuccessView(
-                bookingId: widget.bookingId,
-                title: widget.title,
-                subtitle: widget.subtitle,
-                total: totalStr,
-                details: widget.details,
-              ),
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                  response.data['message'] ?? 'Payment confirmation failed.'),
-              backgroundColor: const Color(0xFFE30613),
-            ),
-          );
-        }
-      }
-    } on DioException catch (e) {
-      debugPrint('Error confirming payment: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(S.of(context).errorServer),
-            backgroundColor: const Color(0xFFE30613),
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('Unexpected error: $e');
-    }
-  }
-
   Widget _buildStickyFooter(BuildContext context, double width, double height) {
     String totalStr = widget.total ?? (widget.subtotal == null
         ? "${S.of(context).currency} 1,575.00"
@@ -349,55 +282,98 @@ class _PaymentViewState extends State<PaymentView> {
             child: ElevatedButton(
               onPressed: () async {
                 if (selectedPaymentMethod == 0) {
-                  // Paymob Flow
-                  try {
-                    // 1. Get Numerical Amount
-                    String priceDigits =
-                        totalStr.replaceAll(RegExp(r'[^0-9.]'), '');
-                    double numericAmount = double.tryParse(priceDigits) ?? 0.0;
-                    String currency =
-                        totalStr.contains('AED') ? 'AED' : 'EGP'; // Defaulting
+                  // NEW Paymob Flow managed by backend
+                  if (widget.bookingId == null) {
+                    Get.snackbar('Error', 'Invalid booking information.');
+                    return;
+                  }
 
-                    // 2. Get Payment Token
-                    final token = await _paymobController.getPaymentToken(
+                  try {
+                    // 1. Get Numerical Amount & Currency
+                    String priceDigits = totalStr.replaceAll(RegExp(r'[^0-9.]'), '');
+                    double numericAmount = double.tryParse(priceDigits) ?? 0.0;
+                    
+                    // Robust currency detection: Look for 3-letter currency codes (AED, EGP, etc.)
+                    // Fallback to 'AED' since this is a UAE-based app (RTA Parking)
+                    String currency = 'AED'; 
+                    final currencyMatch = RegExp(r'[A-Z]{3}').firstMatch(totalStr.toUpperCase());
+                    if (currencyMatch != null) {
+                      currency = currencyMatch.group(0)!;
+                    } else if (totalStr.contains('EGP')) {
+                      currency = 'EGP';
+                    }
+
+                    debugPrint('Detected Currency for Paymob: $currency from string: $totalStr');
+
+                    // 2. Generate Payment URL from Backend
+                    final paymentUrl = await _paymobController.generatePaymentUrl(
+                      bookingId: widget.bookingId!,
                       amount: numericAmount,
                       currency: currency,
                     );
 
-                    if (token != null && mounted) {
-                      // 3. Open WebView
+                    if (paymentUrl != null && mounted) {
+                      // 2. Open WebView
                       Navigator.of(context).push(
-                        MaterialPageRoute(
+                        MaterialPageRoute(  
                           builder: (context) => PaymobWebView(
-                            paymentToken: token,
-                            iframeId:
-                                _paymobController.paymobConfig?.iframeId ?? '',
-                            onSuccess: (transactionId) async {
+                            paymentUrl: paymentUrl,
+                            onPaymentComplete: (bool urlIndicatesSuccess) async {
                               Navigator.of(context).pop(); // Close WebView
-                              await _confirmPayment(transactionId, totalStr);
-                            },
-                            onFailure: () {
-                              Navigator.of(context).pop(); // Close WebView
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Payment failed or cancelled'),
-                                  backgroundColor: Color(0xFFE30613),
-                                ),
-                              );
+                              
+                              if (!urlIndicatesSuccess) {
+                                if (mounted) {
+                                  Get.snackbar(
+                                    'Payment Failed',
+                                    'Payment was cancelled or failed.',
+                                    backgroundColor: const Color(0xFFE30613),
+                                    colorText: Colors.white,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                }
+                                return;
+                              }
+                              
+                              // 3. Verify status from backend
+                              final isSuccess = await _paymobController.verifyPaymentStatus(widget.bookingId!);
+                              
+                              if (isSuccess && mounted) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => PaymentSuccessView(
+                                      bookingId: widget.bookingId,
+                                      title: widget.title,
+                                      subtitle: widget.subtitle,
+                                      total: totalStr,
+                                      details: widget.details,
+                                    ),
+                                  ),
+                                );
+                              } else if (mounted) {
+                                Get.snackbar(
+                                  'Payment Status',
+                                  'Payment not confirmed. Please check your transaction status.',
+                                  backgroundColor: const Color(0xFFE30613),
+                                  colorText: Colors.white,
+                                  snackPosition: SnackPosition.BOTTOM,
+                                );
+                              }
                             },
                           ),
                         ),
                       );
                     }
                   } catch (e) {
-                    debugPrint('Paymob initialization error: $e');
+                    debugPrint('Paymob flow error: $e');
                   }
                 } else {
-                  // Other payment methods (Keep previous logic for now or show snackbar)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Payment method not implemented yet.'),
-                    ),
+                  // Other payment methods
+                  Get.snackbar(
+                    'Information',
+                    'Payment method not implemented yet.',
+                    backgroundColor: Colors.grey[800],
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
                   );
                 }
               },

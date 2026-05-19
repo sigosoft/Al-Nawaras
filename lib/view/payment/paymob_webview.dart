@@ -2,17 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymobWebView extends StatefulWidget {
-  final String paymentToken;
-  final String iframeId;
-  final Function(String transactionId) onSuccess;
-  final VoidCallback onFailure;
+  final String paymentUrl;
+  final void Function(bool) onPaymentComplete;
 
   const PaymobWebView({
     super.key,
-    required this.paymentToken,
-    required this.iframeId,
-    required this.onSuccess,
-    required this.onFailure,
+    required this.paymentUrl,
+    required this.onPaymentComplete,
   });
 
   @override
@@ -22,6 +18,7 @@ class PaymobWebView extends StatefulWidget {
 class _PaymobWebViewState extends State<PaymobWebView> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  bool _isFinished = false;
 
   @override
   void initState() {
@@ -43,7 +40,6 @@ class _PaymobWebViewState extends State<PaymobWebView> {
             setState(() {
               _isLoading = false;
             });
-            _checkUrl(url);
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint('WebResourceError: ${error.description}');
@@ -56,24 +52,34 @@ class _PaymobWebViewState extends State<PaymobWebView> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(
-          'https://accept.paymob.com/api/acceptance/iframes/${widget.iframeId}?payment_token=${widget.paymentToken}'));
+      ..loadRequest(Uri.parse(widget.paymentUrl));
   }
 
   bool _checkUrl(String url) {
-    debugPrint('Navigating to: $url');
-    // Paymob success redirect usually contains 'success=true' and 'id=' (transaction id)
-    if (url.contains('success=true') && url.contains('id=')) {
+    debugPrint('Paymob WebView Navigating to: $url');
+    
+    // The actual payment verification is handled by the backend webhook/status API.
+    // We only need to detect the final Paymob callback redirect to close the WebView.
+    // Paymob appends query parameters like 'success', 'id', and 'hmac' to the callback URL.
+    try {
       final uri = Uri.parse(url);
-      final transactionId = uri.queryParameters['id'];
-      if (transactionId != null) {
-        widget.onSuccess(transactionId);
+      final hasPaymobParams = uri.queryParameters.containsKey('success') &&
+          uri.queryParameters.containsKey('id') &&
+          (uri.queryParameters.containsKey('hmac') || uri.queryParameters.containsKey('txn_response_code'));
+
+      if (hasPaymobParams) {
+        if (!_isFinished) {
+          _isFinished = true;
+          debugPrint('Paymob final callback detected, closing WebView...');
+          final isSuccess = uri.queryParameters['success'] == 'true';
+          widget.onPaymentComplete(isSuccess);
+        }
         return true;
       }
-    } else if (url.contains('success=false')) {
-      widget.onFailure();
-      return true;
+    } catch (e) {
+      debugPrint('Error parsing URL: $e');
     }
+    
     return false;
   }
 
@@ -84,8 +90,13 @@ class _PaymobWebViewState extends State<PaymobWebView> {
         title: const Text('Secure Payment'),
         backgroundColor: const Color(0xFFE30613),
         leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () {
+            if (!_isFinished) {
+              _isFinished = true;
+              widget.onPaymentComplete(false);
+            }
+          },
         ),
       ),
       body: Stack(

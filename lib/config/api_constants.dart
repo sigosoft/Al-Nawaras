@@ -77,4 +77,7 @@ class ApiConstants {
 
   // Payment confirm
   static const String paymentConfirm = '${baseUrl}payment/confirm';
+  // Paymob Integration (Backend Managed)
+  static const String paymobCreatePayment = '${baseUrl}paymob/create/payment';
+  static const String paymobPaymentStatus = '${baseUrl}paymob/payment-status';
 }
