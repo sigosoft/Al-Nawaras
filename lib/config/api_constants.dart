@@ -1,6 +1,6 @@
 class ApiConstants {
   static const String baseUrl =
-      'https://rta-parking-staging-31816802.dev.odoo.com/api/';
+      'https://rta-parking-staging-33387092.dev.odoo.com/api/';
 
   // Auth
   static const String login = '${baseUrl}login';
@@ -37,7 +37,8 @@ class ApiConstants {
   static const String parkingBook = '${baseUrl}parking/book';
   static const String parkingTypes = '${baseUrl}parking/types';
   static const String availableSummary = '${baseUrl}parking/available_summary';
-  static const String checkAvailability = '${baseUrl}parking/check_availability';
+  static const String checkAvailability =
+      '${baseUrl}parking/check_availability';
 
   // Memberships
   static const String memberships = '${baseUrl}memberships';
@@ -64,7 +65,6 @@ class ApiConstants {
 
   // Payment
   static const String paymentSummary = '${baseUrl}payment/summary';
-  
 
   // Notifications
   static const String notifications = '${baseUrl}notifications';
