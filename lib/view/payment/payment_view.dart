@@ -316,7 +316,7 @@ class _PaymentViewState extends State<PaymentView> {
                       // 2. Open WebView
                       Navigator.of(context).push(
                         MaterialPageRoute(  
-                          builder: (context) => PaymobWebView(
+                          builder: (webviewContext) => PaymobWebView(
                             paymentUrl: paymentUrl,
                             onPaymentComplete: (bool urlIndicatesSuccess) async {
                               Navigator.of(context).pop(); // Close WebView

@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'base_client.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../config/api_constants.dart';
 import '../view/register/register_screen.dart';
 import '../view/home/home_screen.dart';
@@ -272,76 +271,13 @@ class LoginController extends GetxController {
   }
 
   Future<void> signInWithFacebook() async {
-    try {
-      isLoading = true;
-      if (!isClosed) update();
-
-      // 🔹 Step 1: Facebook Login
-      final LoginResult result = await FacebookAuth.instance.login();
-
-      if (result.status == LoginStatus.success) {
-        final AccessToken accessToken = result.accessToken!;
-        if (kDebugMode)
-          print("Facebook Access Token: ${accessToken.tokenString}");
-
-        // 🔹 Step 2: Call API
-        final response = await dio.post(
-          ApiConstants.socialLogin,
-          options: Options(contentType: Headers.formUrlEncodedContentType),
-          data: {
-            "provider": "facebook",
-            "access_token": accessToken.tokenString,
-          },
-        );
-
-        final data = response.data;
-
-        if (response.statusCode == 200 && data["status"] == true) {
-          // 🔹 Step 3: Save Token
-          box.write("token", data["data"]["token"]);
-          box.write("partner_id", data["data"]["partner_id"]);
-          box.write("name", data["data"]["name"]);
-          box.write("email", data["data"]["email"]);
-
-          Get.snackbar(
-            "Success",
-            "Login successful",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
-
-          // 🔹 Step 4: Navigate
-          Get.offAll(() => const HomeScreen());
-        } else {
-          Get.snackbar(
-            "Error",
-            data["message"] ?? "Login failed",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        }
-      } else if (result.status == LoginStatus.cancelled) {
-        if (kDebugMode) print("Facebook Login Cancelled");
-      } else {
-        Get.snackbar(
-          "Error",
-          result.message ?? "Facebook login failed",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } on DioException catch (e) {
-      BaseClient.handleDioError(e);
-    } catch (e) {
-      if (kDebugMode) print("Error: $e");
-      Get.snackbar("Error", e.toString());
-    } finally {
-      isLoading = false;
-      if (!isClosed) update();
-    }
+    Get.snackbar(
+      "Coming Soon",
+      "Facebook login will be available in the next update",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.blueAccent,
+      colorText: Colors.white,
+    );
   }
 
   void signInWithX() {

@@ -42,21 +42,35 @@ class PaymobController extends GetxController {
     update();
 
     try {
-      // Small delay to allow the backend webhook to be processed
       debugPrint('Waiting for webhook to process...');
-      await Future.delayed(const Duration(seconds: 2));
-
-      final response = await _paymobService.getPaymentStatus(bookingId: bookingId);
       
-      if (response != null) {
-        // Expecting { "status": true, "data": { "state": "paid" } } 
-        // OR { "status": "success", "paid": true }
-        final data = response['data'] ?? response;
-        final state = data['state']?.toString().toLowerCase();
-        final isPaid = data['paid'] == true || state == 'paid' || state == 'success';
+      // Poll up to 5 times (every 2 seconds) to give the webhook time to arrive
+      for (int i = 0; i < 5; i++) {
+        await Future.delayed(const Duration(seconds: 2));
+
+        final response = await _paymobService.getPaymentStatus(bookingId: bookingId);
         
-        return isPaid;
+        if (response != null) {
+          final data = response['data'] ?? response;
+          
+          // The backend returns keys like 'is_paid', 'paymob_payment_status', or 'booking_state'
+          final state = data['state']?.toString().toLowerCase() ?? 
+                        data['paymob_payment_status']?.toString().toLowerCase() ?? 
+                        data['booking_state']?.toString().toLowerCase();
+                        
+          final isPaid = data['paid'] == true || 
+                         data['is_paid'] == true || 
+                         state == 'paid' || 
+                         state == 'success';
+          
+          if (isPaid) {
+            return true; // Webhook processed successfully!
+          }
+        }
+        debugPrint('Payment status not updated yet. Retrying (${i + 1}/5)...');
       }
+      
+      // If we reach here, we polled 5 times and the backend still hasn't confirmed the payment.
       return false;
     } catch (e) {
       debugPrint('Paymob verifyPaymentStatus error: $e');

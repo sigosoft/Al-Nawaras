@@ -618,7 +618,8 @@ class BookParkingController extends GetxController {
             .map((e) => e as Map<String, dynamic>)
             .toList();
       } else {
-        String msg = response.data?['message'] ?? 'Unable to fetch availability';
+        String msg =
+            response.data?['message'] ?? 'Unable to fetch availability';
         Get.snackbar(
           'Notice',
           msg,
@@ -721,7 +722,8 @@ class BookParkingController extends GetxController {
         // Navigate to SlotSelectionScreen
         Get.to(() => const SlotSelectionScreen());
       } else {
-        String msg = response.data?['message'] ?? 'Unable to check slot availability';
+        String msg =
+            response.data?['message'] ?? 'Unable to check slot availability';
         Get.snackbar(
           'Notice',
           msg,
