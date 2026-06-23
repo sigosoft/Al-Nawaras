@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io' as io;
 import 'package:al_nawaras/view/payment/payment_view.dart';
 import 'package:al_nawaras/view/book_parking/slot_selection_screen.dart';
 import 'package:get/get.dart';
@@ -87,6 +88,14 @@ class BookParkingController extends GetxController {
         if (response.data['status'] == true) {
           final List vData = response.data['data']['vehicles'] ?? [];
           vehiclesList = vData.map((e) => e as Map<String, dynamic>).toList();
+
+          try {
+            final file = io.File('vehicles_debug.json');
+            file.writeAsStringSync(response.data.toString());
+            debugPrint('Logged vehicles to vehicles_debug.json');
+          } catch (e) {
+            debugPrint('Failed to log vehicles: $e');
+          }
 
           if (vehiclesList.isNotEmpty) {
             selectedVehicleData = vehiclesList[0];
@@ -1084,7 +1093,64 @@ class BookParkingController extends GetxController {
               },
               {
                 'label': 'Vehicle',
-                'value': data['vehicle']?.toString() ?? 'N/A',
+                'value': () {
+                  if (selectedVehicleData != null) {
+                    // Helper to extract string from Odoo values (can be String, List, or false/null)
+                    String parseOdooValue(dynamic val) {
+                      if (val == null) return '';
+                      if (val is bool && !val) return '';
+                      if (val is List) {
+                        if (val.length > 1 && val[1] != null && val[1] is String) {
+                          final name = val[1].toString();
+                          if (name.toLowerCase() != 'false') return name;
+                        }
+                        return '';
+                      }
+                      final str = val.toString().trim();
+                      if (str.toLowerCase() == 'false' || str.toLowerCase() == 'null') return '';
+                      return str;
+                    }
+
+                    final modelText = parseOdooValue(selectedVehicleData!['model']);
+                    final modelIdText = parseOdooValue(selectedVehicleData!['model_id']);
+                    final makeText = parseOdooValue(selectedVehicleData!['make']);
+                    final makeIdText = parseOdooValue(selectedVehicleData!['make_id']);
+
+                    List<String> parts = [];
+                    final finalMake = makeText.isNotEmpty ? makeText : makeIdText;
+                    final finalModel = modelText.isNotEmpty ? modelText : modelIdText;
+
+                    if (finalMake.isNotEmpty) parts.add(finalMake);
+                    if (finalModel.isNotEmpty) {
+                      if (finalMake.isEmpty || !finalModel.toLowerCase().contains(finalMake.toLowerCase())) {
+                        parts.add(finalModel);
+                      }
+                    }
+
+                    if (parts.isNotEmpty) {
+                      return parts.join(' ');
+                    }
+
+                    final typeName = selectedVehicleData!['vehicle_type_name']?.toString() ?? '';
+                    if (typeName.isNotEmpty) {
+                      final cleanedType = typeName.replaceAll(RegExp(r'\s*Parking\s*Type\s*[A-Z]?', caseSensitive: false), '').trim();
+                      return cleanedType.isNotEmpty ? cleanedType : typeName;
+                    }
+                  }
+
+                  // Fallback: Try to extract the model from raw API string format "license_number (model)"
+                  final rawVehicle = data['vehicle']?.toString() ?? 'N/A';
+                  final match = RegExp(r'\(([^)]+)\)').firstMatch(rawVehicle);
+                  if (match != null) {
+                    final modelStr = match.group(1)!.trim();
+                    if (modelStr.toLowerCase() != 'false' && modelStr.toLowerCase() != 'null') {
+                      return modelStr;
+                    }
+                  }
+
+                  final cleaned = rawVehicle.replaceAll(RegExp(r'\s*\(?False\)?', caseSensitive: false), '').trim();
+                  return cleaned.isEmpty ? 'N/A' : cleaned;
+                }(),
               },
               {
                 'label': 'Start Date',
@@ -1096,7 +1162,53 @@ class BookParkingController extends GetxController {
               },
               {
                 'label': 'Duration',
-                'value': data['duration']?.toString() ?? 'N/A',
+                'value': () {
+                  final rawDuration = data['duration'];
+                  if (rawDuration != null &&
+                      rawDuration != false &&
+                      rawDuration != 'false' &&
+                      rawDuration.toString().isNotEmpty &&
+                      rawDuration.toString().toLowerCase() != 'n/a') {
+                    return rawDuration.toString();
+                  }
+                  try {
+                    DateTime? startDt;
+                    DateTime? endDt;
+                    final startStr = data['start_date']?.toString();
+                    final endStr = data['end_date']?.toString();
+                    if (startStr != null && endStr != null) {
+                      startDt = DateTime.tryParse(startStr);
+                      endDt = DateTime.tryParse(endStr);
+                    }
+                    if (startDt == null || endDt == null) {
+                      final now = DateTime.now();
+                      startDt = _combineDateAndTime(
+                        dateController.text,
+                        selectedStartTime,
+                        now,
+                      );
+                      endDt = _combineDateAndTime(
+                        endDateController.text,
+                        selectedEndTime,
+                        startDt.add(const Duration(hours: 2)),
+                      );
+                    }
+                    final diff = endDt.difference(startDt);
+                    final days = diff.inDays;
+                    final hours = diff.inHours;
+                    if (days > 0) {
+                      return "$days ${days == 1 ? 'Day' : 'Days'}";
+                    } else if (hours > 0) {
+                      return "$hours ${hours == 1 ? 'Hour' : 'Hours'}";
+                    } else {
+                      final minutes = diff.inMinutes;
+                      return "$minutes ${minutes == 1 ? 'Minute' : 'Minutes'}";
+                    }
+                  } catch (e) {
+                    debugPrint('Error calculating duration: $e');
+                  }
+                  return 'N/A';
+                }(),
               },
             ],
           ),

@@ -129,11 +129,12 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
   }
 
   List<Widget> _buildDynamicCategorizedHistory(HomeController controller) {
-    // Filter logic based on _selectedTab
     final filteredHistory = controller.bookingHistory.where((item) {
       if (_selectedTab == 'All') return true;
-      return item['status']?.toString().toLowerCase() ==
-          _selectedTab.toLowerCase();
+      final bool isItemActive = item['isActive'] == true;
+      if (_selectedTab == 'Active') return isItemActive;
+      if (_selectedTab == 'Completed') return !isItemActive;
+      return false;
     }).toList();
 
     if (filteredHistory.isEmpty && _selectedTab != 'All') {
@@ -188,9 +189,7 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
   }
 
   List<Widget> _buildActionButtons(Map<String, dynamic> booking) {
-    final String status = booking['status']?.toString() ?? '';
-    if (status.toLowerCase().contains('active') ||
-        status.toLowerCase().contains('payment')) {
+    if (booking['isActive'] == true) {
       return [
         Expanded(
           child: SizedBox(

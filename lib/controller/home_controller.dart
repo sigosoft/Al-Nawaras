@@ -427,6 +427,21 @@ class HomeController extends GetxController {
           final historyData = response.data['data']['history'] as List? ?? [];
           final newItems = historyData.map((item) {
             final String state = item['state']?.toString() ?? 'N/A';
+
+            String formatStatus(String statusStr) {
+              if (statusStr.isEmpty || statusStr.toLowerCase() == 'n/a')
+                return 'N/A';
+              final clean = statusStr.replaceAll('_', ' ').replaceAll('-', ' ');
+              return clean
+                  .split(' ')
+                  .map((word) {
+                    if (word.isEmpty) return '';
+                    return word[0].toUpperCase() +
+                        word.substring(1).toLowerCase();
+                  })
+                  .join(' ');
+            }
+
             return {
               'id': item['id'],
               'reference': item['reference'] ?? '',
@@ -436,7 +451,7 @@ class HomeController extends GetxController {
                   'Parking',
               'subtitle':
                   '${item['vehicle'] ?? ''} • ${item['vehicle_type'] ?? ''} • Spot ${item['slot'] ?? item['location'] ?? 'N/A'}',
-              'status': state,
+              'status': formatStatus(state),
               'startDate': item['start_date'] ?? '',
               'endDate': item['end_date'] ?? '',
               'amount':
@@ -444,7 +459,10 @@ class HomeController extends GetxController {
               'isActive':
                   state.toLowerCase().contains('active') ||
                   state.toLowerCase().contains('payment') ||
-                  state.toLowerCase() == 'paid',
+                  state.toLowerCase().contains('progress') ||
+                  state.toLowerCase().contains('pending') ||
+                  state.toLowerCase() == 'paid' ||
+                  state.toLowerCase() == 'draft',
               'monthYear': item['month_year'] ?? 'Recent',
               'extra_amount': item['extra_amount'] ?? 0.0,
               'location': item['location'] ?? '',
@@ -856,7 +874,7 @@ class HomeController extends GetxController {
       final bookCtrl = Get.find<BookParkingController>();
       bId = bookCtrl.lastBookingId;
     } catch (_) {}
-    
+
     Get.to(() => SelectParkingView(isDirectionMode: false, bookingId: bId));
   }
 

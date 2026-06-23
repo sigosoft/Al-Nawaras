@@ -56,18 +56,59 @@ class _PaymentSuccessViewState extends State<PaymentSuccessView> {
     final height = mediaQuery.size.height;
     final padding = width * 0.05;
 
-    final displayTitle = widget.title ?? S.of(context).monthlyMembership;
-    final displaySubtitle =
+    String displayTitle = widget.title ?? S.of(context).monthlyMembership;
+    final isParkingFlow =
+        widget.details?.any(
+          (d) => d['label']?.toLowerCase().contains('parking') ?? false,
+        ) ??
+        false;
+
+    if (widget.details != null) {
+      final membershipDetail = widget.details!.firstWhere(
+        (d) => d['label']?.toLowerCase().contains('membership') ?? false,
+        orElse: () => {},
+      );
+      if (membershipDetail.isNotEmpty) {
+        final val = membershipDetail['value'] ?? '';
+        if (val.isNotEmpty && val.toLowerCase() != 'n/a') {
+          displayTitle = val.endsWith('Plan') || val.endsWith('Membership')
+              ? val
+              : "$val Membership";
+        }
+      }
+    }
+    if (displayTitle.toLowerCase() == 'booking payment') {
+      displayTitle = S.of(context).monthlyMembership;
+    }
+
+    String displaySubtitle =
         widget.subtitle ?? S.of(context).shadedParkingDetail;
+    if (isParkingFlow) {
+      if (displaySubtitle.toLowerCase().endsWith(' parking')) {
+        displaySubtitle = displaySubtitle
+            .substring(0, displaySubtitle.length - 8)
+            .trim();
+      }
+      if (!displaySubtitle.toLowerCase().contains('parking')) {
+        displaySubtitle = "$displaySubtitle Parking";
+      }
+    }
+
     final displayTotal = widget.total ?? '${S.of(context).currency} 0.00';
-    final displayDetails =
-        widget.details ??
-        [
-          {'label': S.of(context).vehicle, 'value': 'N/A'},
-          {'label': S.of(context).duration, 'value': 'N/A'},
-          {'label': S.of(context).startDateLabel, 'value': 'N/A'},
-          {'label': S.of(context).endDateLabel, 'value': 'N/A'},
-        ];
+    final displayDetails = (widget.details != null)
+        ? widget.details!.where((d) {
+            final label = (d['label'] ?? '')
+                .toString()
+                .toLowerCase()
+                .replaceAll(' ', '');
+            return label != 'membershiptype' && label != 'parkingtype';
+          }).toList()
+        : [
+            {'label': S.of(context).vehicle, 'value': 'N/A'},
+            {'label': S.of(context).duration, 'value': 'N/A'},
+            {'label': S.of(context).startDateLabel, 'value': 'N/A'},
+            {'label': S.of(context).endDateLabel, 'value': 'N/A'},
+          ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -154,11 +195,29 @@ class _PaymentSuccessViewState extends State<PaymentSuccessView> {
                     ),
                     child: Column(
                       children: [
-                        _buildSummaryItem(
-                          context,
-                          displayTitle,
-                          displaySubtitle,
-                          isHeader: true,
+                        SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayTitle,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                displaySubtitle,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         const Divider(height: 30, thickness: 1),
                         ...displayDetails.map(
@@ -188,7 +247,7 @@ class _PaymentSuccessViewState extends State<PaymentSuccessView> {
                       height: 1.5,
                     ),
                   ),
-                  SizedBox(height: height * 0.06),
+                  SizedBox(height: height * 0.03),
                   SizedBox(
                     width: double.infinity,
                     height: 55,

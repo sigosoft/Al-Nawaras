@@ -138,7 +138,18 @@ class AdditionalServicesController extends GetxController {
               },
               {
                 'label': S.of(Get.context!).vehicleLabel,
-                'value': data['vehicle']?.toString() ?? 'N/A',
+                'value': () {
+                  final rawVehicle = data['vehicle']?.toString() ?? 'N/A';
+                  final match = RegExp(r'\(([^)]+)\)').firstMatch(rawVehicle);
+                  if (match != null) {
+                    final modelStr = match.group(1)!.trim();
+                    if (modelStr.toLowerCase() != 'false' && modelStr.toLowerCase() != 'null') {
+                      return modelStr;
+                    }
+                  }
+                  final cleaned = rawVehicle.replaceAll(RegExp(r'\s*\(?False\)?', caseSensitive: false), '').trim();
+                  return cleaned.isEmpty ? 'N/A' : cleaned;
+                }(),
               },
               {
                 'label': S.of(Get.context!).startDateLabel,
@@ -150,7 +161,38 @@ class AdditionalServicesController extends GetxController {
               },
               {
                 'label': S.of(Get.context!).duration,
-                'value': data['duration']?.toString() ?? 'N/A',
+                'value': () {
+                  final rawDuration = data['duration'];
+                  if (rawDuration != null &&
+                      rawDuration != false &&
+                      rawDuration != 'false' &&
+                      rawDuration.toString().isNotEmpty &&
+                      rawDuration.toString().toLowerCase() != 'n/a') {
+                    return rawDuration.toString();
+                  }
+                  try {
+                    final startStr = data['start_date']?.toString();
+                    final endStr = data['end_date']?.toString();
+                    if (startStr != null && endStr != null) {
+                      final startDt = DateTime.tryParse(startStr);
+                      final endDt = DateTime.tryParse(endStr);
+                      if (startDt != null && endDt != null) {
+                        final diff = endDt.difference(startDt);
+                        final days = diff.inDays;
+                        final hours = diff.inHours;
+                        if (days > 0) {
+                          return "$days ${days == 1 ? 'Day' : 'Days'}";
+                        } else if (hours > 0) {
+                          return "$hours ${hours == 1 ? 'Hour' : 'Hours'}";
+                        } else {
+                          final minutes = diff.inMinutes;
+                          return "$minutes ${minutes == 1 ? 'Minute' : 'Minutes'}";
+                        }
+                      }
+                    }
+                  } catch (_) {}
+                  return 'N/A';
+                }(),
               },
             ],
           ),

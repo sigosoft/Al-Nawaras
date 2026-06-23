@@ -111,10 +111,58 @@ class MembershipPlansController extends GetxController {
               details: [
                 {'label': 'Membership Type', 'value': data['membership_type']?.toString() ?? 'N/A'},
                 {'label': 'Parking Type', 'value': data['parking_type']?.toString() ?? 'N/A'},
-                {'label': 'Vehicle', 'value': data['vehicle']?.toString() ?? 'N/A'},
+                {
+                  'label': 'Vehicle',
+                  'value': () {
+                    final rawVehicle = data['vehicle']?.toString() ?? 'N/A';
+                    final match = RegExp(r'\(([^)]+)\)').firstMatch(rawVehicle);
+                    if (match != null) {
+                      final modelStr = match.group(1)!.trim();
+                      if (modelStr.toLowerCase() != 'false' && modelStr.toLowerCase() != 'null') {
+                        return modelStr;
+                      }
+                    }
+                    final cleaned = rawVehicle.replaceAll(RegExp(r'\s*\(?False\)?', caseSensitive: false), '').trim();
+                    return cleaned.isEmpty ? 'N/A' : cleaned;
+                  }(),
+                },
                 {'label': 'Start Date', 'value': data['start_date']?.toString() ?? 'N/A'},
                 {'label': 'End Date', 'value': data['end_date']?.toString() ?? 'N/A'},
-                {'label': 'Duration', 'value': data['duration']?.toString() ?? 'N/A'},
+                {
+                  'label': 'Duration',
+                  'value': () {
+                    final rawDuration = data['duration'];
+                    if (rawDuration != null &&
+                        rawDuration != false &&
+                        rawDuration != 'false' &&
+                        rawDuration.toString().isNotEmpty &&
+                        rawDuration.toString().toLowerCase() != 'n/a') {
+                      return rawDuration.toString();
+                    }
+                    try {
+                      final startStr = data['start_date']?.toString();
+                      final endStr = data['end_date']?.toString();
+                      if (startStr != null && endStr != null) {
+                        final startDt = DateTime.tryParse(startStr);
+                        final endDt = DateTime.tryParse(endStr);
+                        if (startDt != null && endDt != null) {
+                          final diff = endDt.difference(startDt);
+                          final days = diff.inDays;
+                          final hours = diff.inHours;
+                          if (days > 0) {
+                            return "$days ${days == 1 ? 'Day' : 'Days'}";
+                          } else if (hours > 0) {
+                            return "$hours ${hours == 1 ? 'Hour' : 'Hours'}";
+                          } else {
+                            final minutes = diff.inMinutes;
+                            return "$minutes ${minutes == 1 ? 'Minute' : 'Minutes'}";
+                          }
+                        }
+                      }
+                    } catch (_) {}
+                    return 'N/A';
+                  }(),
+                },
               ],
             ));
       } else {
