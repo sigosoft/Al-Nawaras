@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import 'base_client.dart';
 import '../config/api_constants.dart';
 import '../view/login/login_screen.dart';
 
@@ -17,7 +18,7 @@ class ForgotPasswordController extends GetxController {
   );
   final List<FocusNode> otpFocusNodes = List.generate(6, (_) => FocusNode());
 
-  final Dio dio = Dio();
+  final Dio dio = BaseClient.dio;
 
   bool isOtpSent = false;
   bool isLoading = false;

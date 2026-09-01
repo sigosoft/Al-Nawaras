@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'base_client.dart';
 import '../config/api_constants.dart';
 
 class NotificationsController extends GetxController {
@@ -34,7 +35,7 @@ class NotificationsController extends GetxController {
     update();
 
     try {
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
 
@@ -94,7 +95,7 @@ class NotificationsController extends GetxController {
 
   Future<void> markAsRead(int notificationId) async {
     try {
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
 

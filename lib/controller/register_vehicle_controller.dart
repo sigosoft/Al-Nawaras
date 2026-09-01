@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'base_client.dart';
 import '../config/api_constants.dart';
 import '../view/home/home_screen.dart';
 
@@ -56,7 +57,7 @@ class RegisterVehicleController extends GetxController {
     update();
 
     try {
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
 
@@ -145,7 +146,7 @@ class RegisterVehicleController extends GetxController {
     update();
 
     try {
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
 

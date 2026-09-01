@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../config/api_constants.dart';
+import '../../controller/base_client.dart';
 import '../../generated/l10n.dart';
 import 'dart:math' as math;
 
@@ -207,7 +208,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         isLoadingData = true;
       });
 
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
       final headers = {
@@ -261,7 +262,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         isLoadingData = true;
       });
 
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
       final headers = {
@@ -308,7 +309,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         isLoadingData = true;
       });
 
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
       final headers = {
@@ -372,7 +373,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
 
   Future<void> _fetchParkingHistory() async {
     try {
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
       final headers = {
@@ -619,7 +620,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     });
 
     try {
-      final dio = Dio();
+      final dio = BaseClient.dio;
       final storage = GetStorage();
       final token = storage.read('token');
       final headers = {

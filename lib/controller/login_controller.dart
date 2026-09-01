@@ -110,15 +110,19 @@ class LoginController extends GetxController {
         options: Options(contentType: Headers.formUrlEncodedContentType),
       );
 
+      if (kDebugMode) {
+        print('--- API RESPONSE (login) ---');
+        print('Status Code: ${response.statusCode}');
+        print('Response Data: ${response.data}');
+        print('--------------------\n');
+      }
+
       if (response.statusCode == 200 && response.data != null) {
         final Map<String, dynamic> data = response.data;
         if (data['status'] == true) {
           if (kDebugMode) {
-            print('--- API RESPONSE ---');
-            print('Response Data: $data');
             print('Token Extracted & Saved: ${data['data']['token']}');
             print('Login successful: ${data['message']}');
-            print('--------------------\n');
           }
           final loginData = data['data'];
 

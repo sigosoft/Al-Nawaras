@@ -2,11 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'base_client.dart';
 import '../config/api_constants.dart';
 import '../view/welcome/welcome_screen.dart';
 
 class LogoutController extends GetxController {
-  final Dio dio = Dio();
+  final Dio dio = BaseClient.dio;
 
   Future<void> logOut() async {
     try {

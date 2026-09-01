@@ -4,10 +4,11 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'base_client.dart';
 import '../config/api_constants.dart';
 
 class AboutUsController extends GetxController {
-  final Dio dio = Dio();
+  final Dio dio = BaseClient.dio;
   final box = GetStorage();
 
   var isLoading = false.obs;
