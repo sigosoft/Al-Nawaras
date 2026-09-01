@@ -78,7 +78,8 @@ class RegisterController extends GetxController {
       );
       return;
     }
-    if (mobileController.text.trim().length != 10 || !GetUtils.isNumericOnly(mobileController.text.trim())) {
+    if (mobileController.text.trim().length != 10 ||
+        !GetUtils.isNumericOnly(mobileController.text.trim())) {
       Get.snackbar(
         'Error',
         'Mobile Number must be exactly 10 digits',
@@ -166,7 +167,8 @@ class RegisterController extends GetxController {
         print('--------------------\n');
       }
 
-      if (response.statusCode == 200 && response.data != null) {
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
         final Map<String, dynamic> data = response.data;
         final exists = data['data']?['exists'] == true;
 
@@ -243,9 +245,13 @@ class RegisterController extends GetxController {
         print('--------------------\n');
       }
 
-      if (response.statusCode == 200 && response.data != null) {
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
         final Map<String, dynamic> data = response.data;
-        final message = data['message'] ?? 'Registration successful';
+        final bool isSuccess = data['status'] == true;
+        final String message =
+            data['message'] ??
+            (isSuccess ? 'Registration successful' : 'Registration failed');
 
         if (kDebugMode) {
           print('Registration message: $message');
@@ -254,19 +260,26 @@ class RegisterController extends GetxController {
           }
         }
 
-        Get.snackbar(
-          'Success',
-          message,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
-        );
-
-        // Navigate to Login after showing the snackbar
-        Future.delayed(const Duration(milliseconds: 1500), () {
+        if (isSuccess) {
           Get.off(() => const LoginScreen());
-        });
+          Get.snackbar(
+            'Success',
+            message,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 3),
+          );
+        } else {
+          Get.snackbar(
+            'Error',
+            message,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 3),
+          );
+        }
       }
     } on DioException catch (e) {
       BaseClient.handleDioError(e);

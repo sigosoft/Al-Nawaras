@@ -117,7 +117,8 @@ class LoginController extends GetxController {
         print('--------------------\n');
       }
 
-      if (response.statusCode == 200 && response.data != null) {
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
         final Map<String, dynamic> data = response.data;
         if (data['status'] == true) {
           if (kDebugMode) {
@@ -144,21 +145,17 @@ class LoginController extends GetxController {
             box.remove('login_password');
           }
 
+          final String loginMessage = data['message'] ?? 'Login successful';
+
+          Get.offAll(() => const HomeScreen());
           Get.snackbar(
             'Success',
-            'Login successful',
+            loginMessage,
             backgroundColor: Colors.green,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(
-              seconds: 2,
-            ), // Gives user time to see success
+            duration: const Duration(seconds: 3),
           );
-
-          // Delay slightly so the snackbar gets registered before replacing the route
-          Future.delayed(const Duration(milliseconds: 300), () {
-            Get.offAll(() => const HomeScreen());
-          });
         } else {
           final message =
               data['message'] ?? 'Login failed. Please check your credentials.';
@@ -243,17 +240,26 @@ class LoginController extends GetxController {
 
       final data = response.data;
 
-      if (response.statusCode == 200 && data["status"] == true) {
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          data["status"] == true) {
         // 🔹 Step 4: Save Token
         box.write("token", data["data"]["token"]);
         box.write("partner_id", data["data"]["partner_id"]);
         box.write("name", data["data"]["name"]);
         box.write("email", data["data"]["email"]);
 
-        Get.snackbar("Success", "Login successful");
+        final String successMessage = data["message"] ?? "Login successful";
 
-        // 🔹 Step 5: Navigate
+        // 🔹 Step 5: Navigate then show snackbar on destination screen
         Get.offAll(() => const HomeScreen());
+        Get.snackbar(
+          "Success",
+          successMessage,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
       } else {
         Get.snackbar(
           "Error",
