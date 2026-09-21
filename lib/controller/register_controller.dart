@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import '../config/api_constants.dart';
+import '../utils/phone_utils.dart';
 import 'base_client.dart';
 import '../view/login/login_screen.dart';
 
 class RegisterController extends GetxController {
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
-  final mobileController = TextEditingController();
+  final mobileController = TextEditingController(text: '+971');
   final emiratesIdController = TextEditingController();
   final drivingLicenseController = TextEditingController();
   final passwordController = TextEditingController();
@@ -21,6 +22,15 @@ class RegisterController extends GetxController {
   bool isPasswordObscured = true;
   bool isConfirmPasswordObscured = true;
   bool isLoading = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Keep cursor after the default +971 prefix
+    mobileController.selection = TextSelection.fromPosition(
+      TextPosition(offset: mobileController.text.length),
+    );
+  }
 
   void togglePasswordVisibility() {
     isPasswordObscured = !isPasswordObscured;
@@ -68,31 +78,11 @@ class RegisterController extends GetxController {
       );
       return;
     }
-    if (mobileController.text.trim().isEmpty) {
+    final mobileError = PhoneUtils.validationError(mobileController.text);
+    if (mobileError != null) {
       Get.snackbar(
         'Error',
-        'Please enter your Mobile Number',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-    if (mobileController.text.trim().length != 10 ||
-        !GetUtils.isNumericOnly(mobileController.text.trim())) {
-      Get.snackbar(
-        'Error',
-        'Mobile Number must be exactly 10 digits',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-    if (drivingLicenseController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Please enter your Driving License',
+        mobileError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -219,7 +209,7 @@ class RegisterController extends GetxController {
     final requestBody = {
       "full_name": fullNameController.text.trim(),
       "email": emailController.text.trim(),
-      "mobile": mobileController.text.trim(),
+      "mobile": PhoneUtils.toInternationalFormat(mobileController.text)!,
       "emirates_id": emiratesIdController.text.trim(),
       "driving_license": drivingLicenseController.text.trim(),
       "password": passwordController.text.trim(),

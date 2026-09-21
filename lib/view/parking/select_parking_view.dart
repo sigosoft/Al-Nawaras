@@ -1,9 +1,11 @@
-import 'package:al_nawaras/view/home/home_screen.dart';
+import 'package:al_nawaras/view/book_parking/book_parking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../config/api_constants.dart';
 import '../../controller/base_client.dart';
+import '../../controller/book_parking_controller.dart';
 import '../../generated/l10n.dart';
 import 'dart:math' as math;
 
@@ -160,31 +162,37 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     }
   }
 
-  void _saveConfirmedSlotGlobally(String code) {
-    final storage = GetStorage();
-    List<dynamic> globalConfirmed =
-        storage.read('user_confirmed_parking_slots') ?? [];
-    if (!globalConfirmed.contains(code)) {
-      globalConfirmed.add(code);
-      storage.write('user_confirmed_parking_slots', globalConfirmed);
-      debugPrint('Saved slot $code to globally confirmed list.');
-    }
-  }
-
   void _loadSavedSlot() {
     final storage = GetStorage();
     final key = 'selected_parking_slot_${widget.bookingId ?? "none"}';
     final saved = storage.read(key);
     debugPrint('Loading saved slot from key: $key - Success: ${saved != null}');
     if (saved != null && saved is Map) {
+      final code = (saved['code'] ?? "").toString();
+      var number = (saved['number'] ?? "").toString();
+
+      // Repair previously saved bad formats like "Bm x 35m - JETSKI"
+      if (code.contains('-') &&
+          (number.contains('m x') || number.contains('م x'))) {
+        final parts = code.split('-');
+        final index = int.tryParse(parts.last);
+        if (index != null) {
+          number = _formatSlotCode(parts.first, index);
+        }
+      }
+
       setState(() {
-        selectedSlotCode = saved['code'] ?? "";
-        selectedSlotNumber = saved['number'] ?? "";
+        selectedSlotCode = code;
+        selectedSlotNumber = number;
         selectedLocationCode = saved['locationCode'] ?? "";
         selectedLocation = saved['location'] ?? "";
         selectedLocationType = saved['locationType'] ?? "";
         selectedSlotSize = saved['size'] ?? "";
       });
+
+      if (code.isNotEmpty && number.isNotEmpty) {
+        _saveSelectedSlot();
+      }
     }
   }
 
@@ -611,105 +619,36 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         break;
     }
 
-    return S.of(context).sizeFormat(formattedPrefix, index.toString().padLeft(2, '0')) + " - " + locationName;
+    return '$formattedPrefix${index.toString().padLeft(2, '0')} - $locationName';
   }
 
-  Future<void> _confirmLocation() async {
-    setState(() {
-      isLoadingData = true;
-    });
-
-    try {
-      final dio = BaseClient.dio;
-      final storage = GetStorage();
-      final token = storage.read('token');
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': '*/*',
-      };
-
-      final Map<String, dynamic> requestBody = {
-        'booking_id': widget.bookingId ?? 1,
-        'slot_number': _formatSlotCode(
-          selectedSlotCode.split('-').first,
-          int.parse(selectedSlotCode.split('-').last),
-        ),
-      };
-
-      debugPrint('\n--- API REQUEST (confirm_location) ---');
-      debugPrint('URL: ${ApiConstants.confirmLocation}');
-      debugPrint('Body: $requestBody');
-
-      final response = await dio.post(
-        ApiConstants.confirmLocation,
-        data: requestBody,
-        options: Options(headers: headers),
+  Future<void> _continueToBooking() async {
+    if (selectedSlotCode.isEmpty || selectedSlotNumber.isEmpty) {
+      _showCustomSnackBar(
+        S.of(context).errorConfirmingLocation,
+        isError: true,
       );
-
-      debugPrint('--- API RESPONSE (confirm_location) ---');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Data: ${response.data}');
-
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          response.data['status'] == true) {
-        if (mounted) {
-          // After confirmation, fetch slot details as requested
-          // check for both slot_assigned and slot_number in response
-          final Map<String, dynamic>? data = response.data['data'];
-          final String confirmedSlot =
-              (data != null && data['slot_assigned'] != null)
-              ? data['slot_assigned'].toString()
-              : (data != null && data['slot_number'] != null)
-              ? data['slot_number'].toString()
-              : requestBody['slot_number'].toString();
-
-          final confirmedInternalCode = selectedSlotCode;
-          await _fetchSlotDetails(confirmedSlot, headers, dio);
-          _saveConfirmedSlotGlobally(
-            confirmedInternalCode,
-          ); // Use the captured code to ensure it stays Light Grey
-
-          if (mounted) {
-            _showCustomSnackBar(
-              response.data['message'] ??
-                  S.of(context).locationConfirmedSuccessfully,
-            );
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-              (route) => false,
-            );
-          }
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: const Color(0xFFE30613),
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.all(16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                content: Text(
-                  S.of(context).failedToConfirmLocation,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Error confirming location: $e');
-      _showCustomSnackBar(S.of(context).errorConfirmingLocation, isError: true);
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoadingData = false;
-        });
-      }
+      return;
     }
+
+    _saveSelectedSlot();
+
+    if (Get.isRegistered<BookParkingController>()) {
+      Get.delete<BookParkingController>(force: true);
+    }
+    final bookCtrl = Get.put(BookParkingController());
+    bookCtrl.applySmartParkingSlot(
+      slotNumber: selectedSlotNumber,
+      slotCode: selectedSlotCode,
+    );
+
+    Get.to(
+      () => BookParkingScreen(
+        fromSmartParking: true,
+        preselectedSlotNumber: selectedSlotNumber,
+        preselectedSlotCode: selectedSlotCode,
+      ),
+    );
   }
 
   @override
@@ -941,11 +880,11 @@ class _SelectParkingViewState extends State<SelectParkingView> {
                 ),
                 onPressed: (selectedSlotCode.isEmpty || _isSameAsConfirmed())
                     ? null
-                    : _confirmLocation,
+                    : _continueToBooking,
                 child: Text(
                   _isSameAsConfirmed()
                       ? S.of(context).locationConfirmedSuccessfully
-                      : S.of(context).confirmLocation,
+                      : S.of(context).next,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -1090,7 +1029,7 @@ class _CompleteMapPainter extends CustomPainter {
       linePaint,
       label: 'JETSKI WITH TRAILER PARKING',
       sec2Label: 'BOATS PARKING - A',
-      sec2ShadedLabel: 'BOATS PARKING - B (SHADED)',
+      sec2ShadedLabel: 'BOATS PARKING - A (SHADED)',
     );
     _drawContinuousRoadTrack(
       canvas,

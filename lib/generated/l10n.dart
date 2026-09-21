@@ -2209,20 +2209,20 @@ class S {
     );
   }
 
-  /// `Vehicle License Number`
+  /// `Vehicle Plate Number`
   String get vehicleLicenseNumber {
     return Intl.message(
-      'Vehicle License Number',
+      'Vehicle Plate Number',
       name: 'vehicleLicenseNumber',
       desc: '',
       args: [],
     );
   }
 
-  /// `Enter your License Number`
+  /// `e.g. DXB 12345`
   String get enterLicenseNumber {
     return Intl.message(
-      'Enter your License Number',
+      'e.g. DXB 12345',
       name: 'enterLicenseNumber',
       desc: '',
       args: [],

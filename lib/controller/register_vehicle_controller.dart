@@ -13,6 +13,7 @@ class RegisterVehicleController extends GetxController {
   final TextEditingController modelController = TextEditingController();
   final TextEditingController chassisController = TextEditingController();
   final TextEditingController yearController = TextEditingController();
+  final TextEditingController colorController = TextEditingController();
   final TextEditingController lengthController = TextEditingController();
   final TextEditingController widthController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
@@ -43,6 +44,7 @@ class RegisterVehicleController extends GetxController {
       modelController.text = draft['model'] ?? '';
       chassisController.text = draft['chassis_no'] ?? '';
       yearController.text = draft['year'] ?? '';
+      colorController.text = draft['color'] ?? '';
       lengthController.text = draft['length'] ?? '';
       widthController.text = draft['width'] ?? '';
       heightController.text = draft['height'] ?? '';
@@ -129,12 +131,13 @@ class RegisterVehicleController extends GetxController {
     final chassis = chassisController.text.trim();
     final model = modelController.text.trim();
     final year = yearController.text.trim();
+    final color = colorController.text.trim();
     final make = makeController.text.trim();
 
-    if (license.isEmpty || chassis.isEmpty) {
+    if (license.isEmpty) {
       Get.snackbar(
         'Error',
-        'Please fill required fields (License & Chassis)',
+        'Please enter Vehicle Plate Number',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -156,7 +159,7 @@ class RegisterVehicleController extends GetxController {
         "chassis_no": chassis,
         "model": model,
         "year": year,
-        "color": "Blue", // Default as per request or can be expanded
+        "color": color,
         // Additional fields if needed by backend (not in user example but in UI)
         "make": make,
         "length": lengthController.text,
@@ -234,6 +237,7 @@ class RegisterVehicleController extends GetxController {
       'model': modelController.text,
       'chassis_no': chassisController.text,
       'year': yearController.text,
+      'color': colorController.text,
       'length': lengthController.text,
       'width': widthController.text,
       'height': heightController.text,
@@ -302,6 +306,7 @@ class RegisterVehicleController extends GetxController {
     modelController.dispose();
     chassisController.dispose();
     yearController.dispose();
+    colorController.dispose();
     lengthController.dispose();
     widthController.dispose();
     heightController.dispose();

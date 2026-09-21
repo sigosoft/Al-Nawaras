@@ -29,9 +29,13 @@ class BookParkingController extends GetxController {
   List<Map<String, dynamic>> availableSummaryList = [];
   List<Map<String, dynamic>> availableSlotsList = [];
   int? selectedSlotId;
-  String? selectedSlotName; // e.g. "Slot A-101"
+  String? selectedSlotName; // e.g. "B35 - JETSKI" or "Slot A-101"
   int? selectedSlotTypeId;
   String? selectedSlotTypeName;
+
+  /// When true, slot was chosen on Smart Parking map first.
+  bool fromSmartParking = false;
+  String? smartParkingSlotCode;
 
   // Maps UI display values (Shaded/Non-Shaded) to API Location IDs.
   final Map<String, int> locationIdMap = {
@@ -55,6 +59,17 @@ class BookParkingController extends GetxController {
     fetchMemberships();
     fetchParkingTypes();
     fetchServices();
+  }
+
+  void applySmartParkingSlot({
+    required String slotNumber,
+    String? slotCode,
+  }) {
+    fromSmartParking = true;
+    selectedSlotName = slotNumber;
+    smartParkingSlotCode = slotCode;
+    selectedSlotId = null;
+    if (!isClosed) update();
   }
 
   Future<void> fetchVehicles() async {
@@ -99,6 +114,9 @@ class BookParkingController extends GetxController {
 
           if (vehiclesList.isNotEmpty) {
             selectedVehicleData = vehiclesList[0];
+            if (fromSmartParking && availableSummaryList.isNotEmpty) {
+              _autoSelectSlotTypeForSmartParking();
+            }
           }
         }
       }
@@ -113,6 +131,9 @@ class BookParkingController extends GetxController {
 
   void setSelectedVehicle(Map<String, dynamic> vehicle) {
     selectedVehicleData = vehicle;
+    if (fromSmartParking && availableSummaryList.isNotEmpty) {
+      _autoSelectSlotTypeForSmartParking();
+    }
     if (!isClosed) update();
   }
 
@@ -626,6 +647,10 @@ class BookParkingController extends GetxController {
         availableSummaryList = data
             .map((e) => e as Map<String, dynamic>)
             .toList();
+
+        if (fromSmartParking) {
+          _autoSelectSlotTypeForSmartParking();
+        }
       } else {
         String msg =
             response.data?['message'] ?? 'Unable to fetch availability';
@@ -644,6 +669,59 @@ class BookParkingController extends GetxController {
       isLoadingSummary = false;
       if (!isClosed) update();
     }
+  }
+
+  /// Picks a matching slot type in the background for Smart Parking
+  /// (map slot is already chosen; UI list is hidden).
+  void _autoSelectSlotTypeForSmartParking() {
+    if (availableSummaryList.isEmpty) return;
+
+    final selectedTypeLower = selectedParkingType.toLowerCase();
+    final mappedLocationId = locationIdMap[selectedTypeLower];
+    final vehicleTypeName =
+        selectedVehicleData?['vehicle_type_name']?.toString().toLowerCase() ??
+            '';
+    final mapSlotHint = (selectedSlotName ?? '').toLowerCase();
+
+    bool matchesVehicle(Map<String, dynamic> st) {
+      final slotTypeName =
+          st['slot_type_name']?.toString().toLowerCase() ?? '';
+      if (slotTypeName.isEmpty) return true;
+
+      if (vehicleTypeName.isNotEmpty) {
+        final vPart = vehicleTypeName.replaceAll(RegExp(r's$'), '');
+        if (slotTypeName.contains(vPart)) return true;
+      }
+
+      for (final keyword in ['jetski', 'food truck', 'boat', 'caravan']) {
+        if (mapSlotHint.contains(keyword) && slotTypeName.contains(keyword)) {
+          return true;
+        }
+      }
+      return vehicleTypeName.isEmpty;
+    }
+
+    final candidates = availableSummaryList.where((st) {
+      if (mappedLocationId != null && st['location_id'] != mappedLocationId) {
+        return false;
+      }
+      if ((st['available_count'] ?? 0) <= 0) return false;
+      return matchesVehicle(st);
+    }).toList();
+
+    final pick = candidates.isNotEmpty
+        ? candidates.first
+        : availableSummaryList.firstWhere(
+            (st) => (st['available_count'] ?? 0) > 0,
+            orElse: () => availableSummaryList.first,
+          );
+
+    selectedSlotTypeId = pick['slot_type_id'] as int?;
+    selectedSlotTypeName = pick['slot_type_name']?.toString();
+    debugPrint(
+      'Smart Parking auto-selected slot type: '
+      '$selectedSlotTypeName (id: $selectedSlotTypeId)',
+    );
   }
 
   Future<void> checkSlotAvailability(
@@ -727,6 +805,13 @@ class BookParkingController extends GetxController {
         availableSlotsList = data
             .map((e) => e as Map<String, dynamic>)
             .toList();
+
+        // Smart Parking already has a physical slot from the map —
+        // only bind the slot type for pricing/booking, skip list selection.
+        if (fromSmartParking) {
+          if (!isClosed) update();
+          return;
+        }
 
         // Navigate to SlotSelectionScreen
         Get.to(() => const SlotSelectionScreen());
@@ -870,7 +955,28 @@ class BookParkingController extends GetxController {
       return;
     }
 
-    if (selectedSlotId == null) {
+    if (fromSmartParking) {
+      if (selectedSlotName == null || selectedSlotName!.trim().isEmpty) {
+        Get.snackbar(
+          'Selection Required',
+          'Please select a parking slot on the map first.',
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      if (selectedSlotTypeId == null) {
+        Get.snackbar(
+          'Selection Required',
+          'Please select an available slot type.',
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+    } else if (selectedSlotId == null) {
       Get.snackbar(
         'Selection Required',
         'Please select a parking slot from the available types.',
@@ -951,6 +1057,8 @@ class BookParkingController extends GetxController {
         "booking_start_date": format(startDate.toUtc()),
         "booking_end_date": format(endDate.toUtc()),
         if (selectedSlotId != null) "slot_id": selectedSlotId,
+        if (fromSmartParking && selectedSlotName != null)
+          "slot_number": selectedSlotName,
       };
 
       debugPrint('\n--- API REQUEST (parking/book) ---');
@@ -976,14 +1084,19 @@ class BookParkingController extends GetxController {
           lastBookingId = bookingId;
           lastBookingTotal = bookingTotal;
 
-          // AUTO-CONFIRM: If the booking is in 'draft', we must confirm it to generate the invoice.
-          // This moves the state to 'pending_payment' as required by payment/confirm.
-          if ((bookData['state'] == 'draft' ||
-                  bookData['state'] == 'pending_payment') &&
-              selectedSlotName != null) {
+          // Confirm location only when booking is still draft / pending payment.
+          // Smart Parking already sends slot_number in parking/book; when state is
+          // already "booked", confirm_location is unnecessary and often 404s.
+          final slotToConfirm = selectedSlotName;
+          final bookingState =
+              bookData['state']?.toString().toLowerCase() ?? '';
+          final needsConfirm =
+              bookingState == 'draft' || bookingState == 'pending_payment';
+
+          if (needsConfirm && slotToConfirm != null) {
             final confirmed = await confirmBookingLocation(
               bookingId!,
-              selectedSlotName!,
+              slotToConfirm,
               selectedSlotId,
             );
             if (!confirmed) {
@@ -997,11 +1110,27 @@ class BookParkingController extends GetxController {
               if (!isClosed) update();
               return; // STOP: Do not go to payment if confirmation failed
             }
+          } else if (fromSmartParking &&
+              smartParkingSlotCode != null &&
+              smartParkingSlotCode!.isNotEmpty) {
+            // Slot already assigned during parking/book — keep map state in sync
+            final storage = GetStorage();
+            List<dynamic> globalConfirmed =
+                storage.read('user_confirmed_parking_slots') ?? [];
+            if (!globalConfirmed.contains(smartParkingSlotCode)) {
+              globalConfirmed.add(smartParkingSlotCode);
+              storage.write('user_confirmed_parking_slots', globalConfirmed);
+            }
+            debugPrint(
+              'Skipping confirm_location — booking already in state: $bookingState',
+            );
           }
 
           // Refresh availability and reset selection for any future booking
-          selectedSlotId = null;
-          selectedSlotName = null;
+          if (!fromSmartParking) {
+            selectedSlotId = null;
+            selectedSlotName = null;
+          }
           fetchAvailableSummary();
         }
       }
@@ -1302,11 +1431,11 @@ class BookParkingController extends GetxController {
         if (token != null) 'Authorization': 'Bearer $token',
         'Accept': '*/*',
       };
-      final body = {
+      final body = <String, dynamic>{
         'booking_id': bId,
-        'slot_id': sId,
         'slot_name': sName,
         'slot_number': sName,
+        if (sId != null) 'slot_id': sId,
       };
       debugPrint('\n--- API REQUEST (confirm_location - auto) ---');
       debugPrint('URL: ${ApiConstants.confirmLocation}');
@@ -1339,6 +1468,17 @@ class BookParkingController extends GetxController {
 
       if (isSuccess) {
         debugPrint('Slot confirmation SUCCESS: $sName');
+        if (fromSmartParking &&
+            smartParkingSlotCode != null &&
+            smartParkingSlotCode!.isNotEmpty) {
+          final storage = GetStorage();
+          List<dynamic> globalConfirmed =
+              storage.read('user_confirmed_parking_slots') ?? [];
+          if (!globalConfirmed.contains(smartParkingSlotCode)) {
+            globalConfirmed.add(smartParkingSlotCode);
+            storage.write('user_confirmed_parking_slots', globalConfirmed);
+          }
+        }
         return true;
       }
 
@@ -1348,12 +1488,7 @@ class BookParkingController extends GetxController {
       return false;
     } catch (e) {
       debugPrint('Auto-confirm failed with exception: $e');
-      Get.snackbar(
-        'Slot Not Found',
-        'An error occurred while confirming the slot. Please try again.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      // Caller shows the user-facing error; avoid duplicate snackbars.
       return false;
     }
   }

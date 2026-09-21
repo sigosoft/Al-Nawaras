@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controller/register_controller.dart';
 import '../../generated/l10n.dart';
@@ -58,10 +59,14 @@ class RegisterScreen extends StatelessWidget {
 
                       _buildTextField(
                         label: S.of(context).mobileNumber,
-                        hint: S.of(context).mobileHint,
+                        hint: '50 XXX XXXX',
                         controller: controller.mobileController,
                         keyboardType: TextInputType.phone,
                         height: height,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[+\d]')),
+                          LengthLimitingTextInputFormatter(13), // +971 + 9 digits
+                        ],
                       ),
 
                       // _buildTextField(
@@ -225,6 +230,7 @@ class RegisterScreen extends StatelessWidget {
     bool obscureText = false,
     Widget? suffixIcon,
     required double height,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -242,6 +248,7 @@ class RegisterScreen extends StatelessWidget {
               controller: controller,
               keyboardType: keyboardType,
               obscureText: obscureText,
+              inputFormatters: inputFormatters,
               style: const TextStyle(fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,

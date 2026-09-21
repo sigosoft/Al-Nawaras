@@ -159,7 +159,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "enterFullName": MessageLookupByLibrary.simpleMessage("أدخل اسمك الكامل"),
     "enterLicenseNumber": MessageLookupByLibrary.simpleMessage(
-      "أدخل رقم الترخيص الخاص بك",
+      "مثال: DXB 12345",
     ),
     "enterMobileNumber": MessageLookupByLibrary.simpleMessage(
       "أدخل رقم هاتفك المحمول",
@@ -476,7 +476,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "vehicleDirection": MessageLookupByLibrary.simpleMessage("اتجاه المركبة"),
     "vehicleLabel": MessageLookupByLibrary.simpleMessage("المركبة"),
     "vehicleLicenseNumber": MessageLookupByLibrary.simpleMessage(
-      "رقم ترخيص المركبة",
+      "رقم لوحة المركبة",
     ),
     "vehiclePhoto": MessageLookupByLibrary.simpleMessage("صورة المركبة"),
     "vehicleRegistrationDocument": MessageLookupByLibrary.simpleMessage(

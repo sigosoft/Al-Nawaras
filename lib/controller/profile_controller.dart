@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../config/api_constants.dart';
 import '../model/profile_model.dart';
+import '../utils/phone_utils.dart';
 import 'base_client.dart';
 import 'home_controller.dart';
 import 'rewards_controller.dart';
@@ -113,7 +114,8 @@ class ProfileController extends GetxController {
         if (!isClosed) {
           nameController.text = profile.value?.name ?? "";
           emailController.text = profile.value?.email ?? "";
-          phoneController.text = profile.value?.mobile ?? "";
+          phoneController.text =
+              PhoneUtils.formatForDisplay(profile.value?.mobile);
           isImageRemoved.value = false; // Reset removal flag after fetch
         }
       }
@@ -130,7 +132,7 @@ class ProfileController extends GetxController {
   void resetControllers() {
     nameController.text = profile.value?.name ?? "";
     emailController.text = profile.value?.email ?? "";
-    phoneController.text = profile.value?.mobile ?? "";
+    phoneController.text = PhoneUtils.formatForDisplay(profile.value?.mobile);
     selectedImage.value = null;
     base64Image = "";
     isImageRemoved.value = false;
@@ -198,26 +200,19 @@ class ProfileController extends GetxController {
       );
       return;
     }
-    if (phoneController.text.trim().isEmpty) {
+    final phoneError = PhoneUtils.validationError(phoneController.text);
+    if (phoneError != null) {
       Get.snackbar(
         "Error",
-        "Phone number cannot be empty",
+        phoneError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
-    if (!GetUtils.isNumericOnly(phoneController.text.trim())) {
-      Get.snackbar(
-        "Error",
-        "Phone number must contain only digits",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
+    final normalizedPhone =
+        PhoneUtils.toInternationalFormat(phoneController.text)!;
 
     try {
       isLoading(true);
@@ -231,7 +226,7 @@ class ProfileController extends GetxController {
         print('Partner ID: $pId');
         print('Name: ${nameController.text}');
         print('Email: ${emailController.text}');
-        print('Phone: ${phoneController.text}');
+        print('Phone: $normalizedPhone');
         print('Base64 Length: ${base64Image.length}');
         if (base64Image.isNotEmpty) {
           print('Base64 Start: ${base64Image.substring(0, 30)}...');
@@ -243,7 +238,7 @@ class ProfileController extends GetxController {
         "partner_id": pId,
         "name": nameController.text,
         "email": emailController.text,
-        "phone_number": phoneController.text,
+        "phone_number": normalizedPhone,
         
         if (base64Image.isNotEmpty) "profile_picture": base64Image,
         if (base64Image.isNotEmpty) "profile_image": base64Image, 

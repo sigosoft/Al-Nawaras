@@ -7,7 +7,16 @@ import '../widgets/draggable_help_button.dart';
 import '../widgets/custom_no_data.dart';
 
 class BookParkingScreen extends StatelessWidget {
-  const BookParkingScreen({super.key});
+  final bool fromSmartParking;
+  final String? preselectedSlotNumber;
+  final String? preselectedSlotCode;
+
+  const BookParkingScreen({
+    super.key,
+    this.fromSmartParking = false,
+    this.preselectedSlotNumber,
+    this.preselectedSlotCode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +26,37 @@ class BookParkingScreen extends StatelessWidget {
     return GetBuilder<BookParkingController>(
       init: BookParkingController(),
       builder: (controller) {
+        // Re-apply map slot if controller was recreated by GetBuilder.
+        if (fromSmartParking &&
+            preselectedSlotNumber != null &&
+            preselectedSlotNumber!.isNotEmpty &&
+            controller.selectedSlotName != preselectedSlotNumber) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!controller.fromSmartParking ||
+                controller.selectedSlotName != preselectedSlotNumber) {
+              controller.applySmartParkingSlot(
+                slotNumber: preselectedSlotNumber!,
+                slotCode: preselectedSlotCode,
+              );
+            }
+          });
+        } else if (!fromSmartParking && controller.fromSmartParking) {
+          // Opening normal Book Parking — clear Smart Parking mode.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            controller.fromSmartParking = false;
+            controller.smartParkingSlotCode = null;
+            controller.selectedSlotId = null;
+            controller.selectedSlotName = null;
+            controller.update();
+          });
+        }
+
         return Scaffold(
           backgroundColor: const Color(0xFFF7F7F7),
           appBar: CustomAppBar(
-            title: S.of(context).bookParking,
+            title: fromSmartParking || controller.fromSmartParking
+                ? S.of(context).smartParking
+                : S.of(context).bookParking,
             centerTitle: false,
             onBackPressed: () {
               Get.back();
@@ -68,17 +104,22 @@ class BookParkingScreen extends StatelessWidget {
                               width,
                               height,
                             ),
-                            SizedBox(height: height * 0.035),
-                            _buildLabel(S.of(context).availableSlotTypes),
-                            controller.isDateTimeSelected
-                                ? _buildAvailableSummaryList(
-                                    context,
-                                    controller,
-                                    width,
-                                    height,
-                                  )
-                                : _buildDateTimePlaceholder(context, width),
-                            if (controller.selectedSlotId != null) ...[
+                            if (!fromSmartParking &&
+                                !controller.fromSmartParking) ...[
+                              SizedBox(height: height * 0.035),
+                              _buildLabel(S.of(context).availableSlotTypes),
+                              controller.isDateTimeSelected
+                                  ? _buildAvailableSummaryList(
+                                      context,
+                                      controller,
+                                      width,
+                                      height,
+                                    )
+                                  : _buildDateTimePlaceholder(context, width),
+                            ],
+                            if (controller.selectedSlotName != null &&
+                                controller.selectedSlotName!.isNotEmpty) ...[
+                              SizedBox(height: height * 0.02),
                               SizedBox(height: height * 0.02),
                               Container(
                                 padding: const EdgeInsets.all(12),
@@ -94,7 +135,9 @@ class BookParkingScreen extends StatelessWidget {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        S.of(context).selectedSlot(controller.selectedSlotName ?? ''),
+                                        S.of(context).selectedSlot(
+                                              controller.selectedSlotName ?? '',
+                                            ),
                                         style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.green),

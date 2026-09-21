@@ -6,6 +6,7 @@ import 'package:get_storage/get_storage.dart';
 import 'base_client.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../config/api_constants.dart';
+import '../utils/phone_utils.dart';
 import '../view/register/register_screen.dart';
 import '../view/home/home_screen.dart';
 import '../view/login/forgot_password_view.dart';
@@ -51,11 +52,11 @@ class LoginController extends GetxController {
   }
 
   Future<void> signIn() async {
-    final login = emailOrMobileController.text.trim();
+    final rawLogin = emailOrMobileController.text.trim();
     final password = passwordController.text.trim();
 
     // Validation
-    if (login.isEmpty) {
+    if (rawLogin.isEmpty) {
       Get.snackbar(
         'Error',
         'Please enter your Username or Mobile',
@@ -66,21 +67,19 @@ class LoginController extends GetxController {
       return;
     }
 
-    // Email or Mobile Validation
-    if (login.contains('@')) {
-      // Email must contain @ (already true if contains('@'))
-    } else {
-      // Mobile must be exactly 10 digits
-      if (login.length != 10 || !GetUtils.isNumericOnly(login)) {
+    String login = rawLogin;
+    if (!rawLogin.contains('@')) {
+      if (!PhoneUtils.isValidUaeMobile(rawLogin)) {
         Get.snackbar(
           'Error',
-          'Mobile number must be exactly 10 digits or enter a valid Email',
+          'Enter a valid UAE mobile (+971 XX XXX XXXX) or Email',
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
         );
         return;
       }
+      login = PhoneUtils.toInternationalFormat(rawLogin)!;
     }
     if (password.isEmpty) {
       Get.snackbar(

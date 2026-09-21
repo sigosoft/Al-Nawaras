@@ -102,7 +102,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel(S.of(context).model),
+                      _buildLabel('${S.of(context).model} (Optional)'),
                       _buildTextField(
                         controller.modelController,
                         S.of(context).modelHint,
@@ -110,7 +110,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel(S.of(context).chassisNumber),
+                      _buildLabel('${S.of(context).chassisNumber} (Optional)'),
                       _buildTextField(
                         controller.chassisController,
                         S.of(context).chassisHint,
@@ -118,10 +118,18 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel(S.of(context).year),
+                      _buildLabel('${S.of(context).year} (Optional)'),
                       _buildTextField(
                         controller.yearController,
                         S.of(context).yearHint,
+                        height,
+                        width,
+                      ),
+                      SizedBox(height: height * 0.02),
+                      _buildLabel('Color (Optional)'),
+                      _buildTextField(
+                        controller.colorController,
+                        'e.g. Blue',
                         height,
                         width,
                       ),
@@ -164,7 +172,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.035),
-                      _buildLabel(S.of(context).vehiclePhoto),
+                      _buildLabel('${S.of(context).vehiclePhoto} (Optional)'),
                       _buildUploadBox(
                         S.of(context).tapToUploadPhoto,
                         controller.onUploadPhotoClick,

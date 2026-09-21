@@ -164,7 +164,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enter your full name",
     ),
     "enterLicenseNumber": MessageLookupByLibrary.simpleMessage(
-      "Enter your License Number",
+      "e.g. DXB 12345",
     ),
     "enterMobileNumber": MessageLookupByLibrary.simpleMessage(
       "Enter your mobile number",
@@ -500,7 +500,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "vehicleLabel": MessageLookupByLibrary.simpleMessage("Vehicle"),
     "vehicleLicenseNumber": MessageLookupByLibrary.simpleMessage(
-      "Vehicle License Number",
+      "Vehicle Plate Number",
     ),
     "vehiclePhoto": MessageLookupByLibrary.simpleMessage("Vehicle Photo"),
     "vehicleRegistrationDocument": MessageLookupByLibrary.simpleMessage(

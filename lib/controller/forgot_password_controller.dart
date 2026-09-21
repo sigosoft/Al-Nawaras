@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
+import '../utils/phone_utils.dart';
 import '../view/login/login_screen.dart';
 
 class ForgotPasswordController extends GetxController {
@@ -37,6 +38,12 @@ class ForgotPasswordController extends GetxController {
 
   // Returns the concatenated OTP string from all 6 digit fields
   String get otpValue => otpDigitControllers.map((c) => c.text).join();
+
+  String _normalizedUsername() {
+    final raw = userOrMobileController.text.trim();
+    if (raw.contains('@')) return raw;
+    return PhoneUtils.toInternationalFormat(raw) ?? raw;
+  }
 
   void sendOtp() {
     if (userOrMobileController.text.trim().isEmpty) {
@@ -101,12 +108,12 @@ class ForgotPasswordController extends GetxController {
       if (kDebugMode) {
         print('\n--- API REQUEST (send_otp) ---');
         print('URL: ${ApiConstants.sendOtp}');
-        print('Payload: {"username": "${userOrMobileController.text.trim()}"}');
+        print('Payload: {"username": "${_normalizedUsername()}"}');
       }
 
       final response = await dio.post(
         ApiConstants.sendOtp,
-        data: {"username": userOrMobileController.text.trim()},
+        data: {"username": _normalizedUsername()},
         options: Options(contentType: Headers.formUrlEncodedContentType),
       );
 
@@ -204,7 +211,7 @@ class ForgotPasswordController extends GetxController {
     if (!isClosed) update();
 
     final requestBody = {
-      "username": userOrMobileController.text.trim(),
+      "username": _normalizedUsername(),
       "otp": otpValue,
       "new_password": newPasswordController.text.trim(),
       "confirm_password": confirmPasswordController.text.trim(),
