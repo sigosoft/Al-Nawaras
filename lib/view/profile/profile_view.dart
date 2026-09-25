@@ -1,6 +1,6 @@
 import 'package:al_nawaras/controller/profile_controller.dart';
-import 'package:al_nawaras/view/booking/booking_history.dart';
 import 'package:al_nawaras/controller/about_us_controller.dart';
+import 'package:al_nawaras/view/booking/booking_history.dart';
 import 'package:al_nawaras/view/privacy_policy/privacy_policy.dart';
 import 'package:al_nawaras/view/security/security_view.dart';
 import 'package:al_nawaras/view/help_support/help_support_view.dart';
@@ -57,36 +57,38 @@ class ProfileView extends StatelessWidget {
                 SingleChildScrollView(
                   child: Column(
                     children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          ProfileHeader(width: width, height: height),
-                          PositionedDirectional(
-                            top: height * 0.25, // Adjust for overlap
-                            start: padding,
-                            end: padding,
-                            child: MembershipStatusCard(
-                              width: width,
-                              status:
-                                  homeController.membershipStatus !=
-                                      "Loading..."
-                                  ? homeController.membershipStatus
-                                  : (profileController
-                                            .profile
-                                            .value
-                                            ?.membershipStatus ??
-                                        S.of(context).noStatus),
-                              vehicles: homeController.allVehicles,
-                              bookings: homeController.bookingHistory,
-                              services: additionalServicesController.services,
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Floating overlap pushes contents down
+                      // Header + overlapping card share one hit-test area so
+                      // My Vehicles / Bookings / Services taps work.
                       SizedBox(
-                        height: height * 0.2,
-                      ), // Buffer for status card bottom
+                        height: height * 0.45,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            ProfileHeader(width: width, height: height),
+                            PositionedDirectional(
+                              top: height * 0.25,
+                              start: padding,
+                              end: padding,
+                              child: MembershipStatusCard(
+                                width: width,
+                                status:
+                                    homeController.membershipStatus !=
+                                        "Loading..."
+                                    ? homeController.membershipStatus
+                                    : (profileController
+                                              .profile
+                                              .value
+                                              ?.membershipStatus ??
+                                          S.of(context).noStatus),
+                                vehicles: homeController.allVehicles,
+                                bookings: homeController.bookingHistory,
+                                services:
+                                    additionalServicesController.services,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: padding),
                         child: Column(
@@ -153,7 +155,7 @@ class ProfileView extends StatelessWidget {
         // ),
         GestureDetector(
           onTap: () {
-            Get.off(() => BookingHistoryView());
+            Get.to(() => const BookingHistoryView());
           },
           child: ProfileMenuItem(
             icon: Icons.assignment_outlined,

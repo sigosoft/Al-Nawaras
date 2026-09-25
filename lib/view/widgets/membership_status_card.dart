@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../controller/home_controller.dart';
 import '../../generated/l10n.dart';
+import '../booking/booking_history.dart';
+import '../home/my_vehicles_view.dart';
 
 class MembershipStatusCard extends StatelessWidget {
   final double width;
@@ -77,9 +81,35 @@ class MembershipStatusCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatBox(S.of(context).myVehicles, (vehicles?.length ?? 0).toString(), width),
-              _buildStatBox(S.of(context).bookings, (bookings?.length ?? 0).toString(), width),
-              _buildStatBox(S.of(context).services, (services?.length ?? 0).toString(), width),
+              _buildStatBox(
+                context,
+                S.of(context).myVehicles,
+                (vehicles?.length ?? 0).toString(),
+                width,
+                onTap: () {
+                  Get.to(() => const MyVehiclesView());
+                },
+              ),
+              _buildStatBox(
+                context,
+                S.of(context).bookings,
+                (bookings?.length ?? 0).toString(),
+                width,
+                onTap: () {
+                  Get.to(() => const BookingHistoryView());
+                },
+              ),
+              _buildStatBox(
+                context,
+                S.of(context).services,
+                (services?.length ?? 0).toString(),
+                width,
+                onTap: () {
+                  if (Get.isRegistered<HomeController>()) {
+                    Get.find<HomeController>().changeBottomNavIndex(2);
+                  }
+                },
+              ),
             ],
           ),
         ],
@@ -87,30 +117,43 @@ class MembershipStatusCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatBox(String label, String value, double width) {
-    return Container(
-      width: width * 0.26, // Dynamic sizing
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Colors.black,
+  Widget _buildStatBox(
+    BuildContext context,
+    String label,
+    String value,
+    double width, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: width * 0.26,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

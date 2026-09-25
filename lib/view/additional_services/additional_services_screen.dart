@@ -91,7 +91,7 @@ class AdditionalServicesScreen extends StatelessWidget {
             ],
           ),
           bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: 2,
+            currentIndex: Get.find<HomeController>().currentIndex,
             onTap: (index) {
               Get.find<HomeController>().changeBottomNavIndex(index);
             },

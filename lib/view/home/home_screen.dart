@@ -203,6 +203,8 @@ class HomeScreen extends StatelessWidget {
                               height,
                             ),
                             SizedBox(height: height * 0.02),
+                            _buildRegisterButton(controller, context, height),
+                            SizedBox(height: height * 0.02),
                             if (controller.filteredVehicles.isEmpty)
                               Padding(
                                 padding: EdgeInsets.symmetric(
@@ -242,8 +244,6 @@ class HomeScreen extends StatelessWidget {
                                     );
                                   })
                                   .toList(),
-                            SizedBox(height: height * 0.02),
-                            _buildRegisterButton(controller, context, height),
                           ],
 
                           if (controller.isSectionVisible('activity', [

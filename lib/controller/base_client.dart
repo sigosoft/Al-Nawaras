@@ -19,6 +19,8 @@ class BaseClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
+          // Always use the latest runtime base URL
+          options.baseUrl = ApiConstants.baseUrl;
           print('\n=================== API REQUEST ===================');
           print('Method : ${options.method}');
           print('URL    : ${options.uri}');
@@ -55,6 +57,11 @@ class BaseClient {
   }
 
   static Dio get dio => _dio;
+
+  /// Apply a new API base URL to Dio (after remote config / manual override).
+  static void applyBaseUrl(String url) {
+    _dio.options.baseUrl = url;
+  }
 
   /// Centralized handling for Dio errors
   static void handleDioError(DioException e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io' as io;
 import 'package:al_nawaras/view/payment/payment_view.dart';
 import 'package:al_nawaras/view/book_parking/slot_selection_screen.dart';
+import 'package:al_nawaras/view/terms_and_conditions/terms_and_conditions_view.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
@@ -14,6 +15,7 @@ class BookParkingController extends GetxController {
   bool isLoadingParkingTypes = false;
   bool isLoadingServices = false;
   bool isBooking = false;
+  bool isTermsAccepted = false;
   List<Map<String, dynamic>> vehiclesList = [];
   Map<String, dynamic>? selectedVehicleData;
 
@@ -928,8 +930,31 @@ class BookParkingController extends GetxController {
     return 0.0;
   }
 
+  void toggleTermsAccepted() {
+    isTermsAccepted = !isTermsAccepted;
+    if (!isClosed) update();
+  }
+
+  void openTermsAndConditions() {
+    Get.to(() => const TermsAndConditionsView());
+  }
+
   Future<void> onNextClick() async {
     // --- START VALIDATION ---
+    if (!isTermsAccepted) {
+      final isArabic = Get.locale?.languageCode == 'ar';
+      Get.snackbar(
+        isArabic ? 'مطلوب' : 'Required',
+        isArabic
+            ? 'يرجى الموافقة على الشروط والأحكام للمتابعة'
+            : 'Please accept the Terms and Conditions to continue.',
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     if (selectedVehicleData == null) {
       Get.snackbar(
         'Selection Required',

@@ -47,29 +47,30 @@ class CustomBottomNavBar extends StatelessWidget {
 
   Widget _buildNavItem(int index, String label, String assetPath) {
     final isSelected = currentIndex == index;
-    return GestureDetector(
-      onTap: () => onTap(index),
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            assetPath,
-            height: 24,
-            width: 24,
-            color: isSelected ? selectedColor : unselectedColor,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return Expanded(
+      child: InkWell(
+        onTap: () => onTap(index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              assetPath,
+              height: 24,
+              width: 24,
               color: isSelected ? selectedColor : unselectedColor,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? selectedColor : unselectedColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

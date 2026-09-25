@@ -1,11 +1,7 @@
-import 'package:dio/dio.dart';
 import 'package:al_nawaras/view/payment/payment_success_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import '../../config/api_constants.dart';
 import '../../generated/l10n.dart';
-import '../../controller/base_client.dart';
 import '../widgets/payment_summary_card.dart';
 import '../widgets/payment_method_item.dart';
 import '../widgets/credit_card_form.dart';
@@ -313,54 +309,18 @@ class _PaymentViewState extends State<PaymentView> {
                     );
 
                     if (paymentUrl != null && mounted) {
-                      // 2. Open WebView
-                      Navigator.of(context).push(
-                        MaterialPageRoute(  
-                          builder: (webviewContext) => PaymobWebView(
-                            paymentUrl: paymentUrl,
-                            onPaymentComplete: (bool urlIndicatesSuccess) async {
-                              Navigator.of(context).pop(); // Close WebView
-                              
-                              if (!urlIndicatesSuccess) {
-                                if (mounted) {
-                                  Get.snackbar(
-                                    'Payment Failed',
-                                    'Payment was cancelled or failed.',
-                                    backgroundColor: const Color(0xFFE30613),
-                                    colorText: Colors.white,
-                                    snackPosition: SnackPosition.BOTTOM,
-                                  );
-                                }
-                                return;
-                              }
-                              
-                              // 3. Verify status from backend
-                              final isSuccess = await _paymobController.verifyPaymentStatus(widget.bookingId!);
-                              
-                              if (isSuccess && mounted) {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => PaymentSuccessView(
-                                      bookingId: widget.bookingId,
-                                      title: widget.title,
-                                      subtitle: widget.subtitle,
-                                      total: totalStr,
-                                      details: widget.details,
-                                    ),
-                                  ),
-                                );
-                              } else if (mounted) {
-                                Get.snackbar(
-                                  'Payment Status',
-                                  'Payment not confirmed. Please check your transaction status.',
-                                  backgroundColor: const Color(0xFFE30613),
-                                  colorText: Colors.white,
-                                  snackPosition: SnackPosition.BOTTOM,
-                                );
-                              }
-                            },
-                          ),
+                      final result =
+                          await Navigator.of(context).push<PaymobPaymentResult>(
+                        MaterialPageRoute(
+                          builder: (_) => PaymobWebView(paymentUrl: paymentUrl),
                         ),
+                      );
+
+                      if (!mounted) return;
+
+                      await _handlePaymobResult(
+                        result ?? PaymobPaymentResult.unknown,
+                        totalStr,
                       );
                     }
                   } catch (e) {
@@ -412,5 +372,77 @@ class _PaymentViewState extends State<PaymentView> {
     } catch (e) {
       return subtotal;
     }
+  }
+
+  Future<void> _handlePaymobResult(
+    PaymobPaymentResult result,
+    String totalStr,
+  ) async {
+    final bookingId = widget.bookingId;
+    if (bookingId == null) return;
+
+    // Gateway said success → show success immediately and leave checkout.
+    // Backend webhook may still be catching up; never show a false failure.
+    if (result == PaymobPaymentResult.success) {
+      _goToPaymentSuccess(totalStr);
+      _paymobController.verifyPaymentStatus(bookingId, silent: true);
+      return;
+    }
+
+    // Declined / closed / unclear → confirm with backend before deciding.
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(color: Color(0xFFE30613)),
+      ),
+      barrierDismissible: false,
+    );
+
+    final isPaid = await _paymobController.verifyPaymentStatus(
+      bookingId,
+      silent: true,
+      maxAttempts: result == PaymobPaymentResult.failed ? 5 : 10,
+    );
+
+    if (Get.isDialogOpen ?? false) {
+      Get.back();
+    }
+    if (!mounted) return;
+
+    if (isPaid) {
+      _goToPaymentSuccess(totalStr);
+      return;
+    }
+
+    if (result == PaymobPaymentResult.failed) {
+      Get.snackbar(
+        'Payment Failed',
+        'Payment was declined or failed. Please try again.',
+        backgroundColor: const Color(0xFFE30613),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      // User closed WebView or result was unclear — do not claim failure
+      // when payment may still complete asynchronously.
+      Get.snackbar(
+        'Payment Status',
+        'Payment was not confirmed yet. Check Bookings if the charge went through.',
+        backgroundColor: Colors.orange[800],
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  void _goToPaymentSuccess(String totalStr) {
+    Get.offAll(
+      () => PaymentSuccessView(
+        bookingId: widget.bookingId,
+        title: widget.title,
+        subtitle: widget.subtitle,
+        total: totalStr,
+        details: widget.details,
+      ),
+    );
   }
 }

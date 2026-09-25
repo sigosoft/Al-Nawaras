@@ -1016,46 +1016,123 @@ class BookParkingScreen extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (controller.isCalculatedTotalAvailable)
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    S.of(context).totalAmount,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: Checkbox(
+                    value: controller.isTermsAccepted,
+                    onChanged: (_) => controller.toggleTermsAccepted(),
+                    activeColor: const Color(0xFFE30613),
+                    side: const BorderSide(color: Colors.black38, width: 1.5),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
                   ),
-                  SizedBox(height: height * 0.01),
-                  Text(
-                    controller.calculatedTotal,
-                    style: TextStyle(
-                      fontSize: 16,
-                      // fontWeight: FontWeight.bold,
-                      color: Colors.black.withValues(alpha: 0.6),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: controller.toggleTermsAccepted,
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                          height: 1.3,
+                        ),
+                        children: [
+                          TextSpan(
+                            text:
+                                Localizations.localeOf(context).languageCode ==
+                                    'ar'
+                                ? 'أوافق على '
+                                : 'I agree to the ',
+                          ),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: GestureDetector(
+                              onTap: controller.openTermsAndConditions,
+                              child: Text(
+                                S.of(context).termsAndConditions,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFFE30613),
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            if (!controller.isCalculatedTotalAvailable)
-              const Spacer(),
-            ElevatedButton(
-              onPressed: controller.onNextClick,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE30613),
-                foregroundColor: Colors.white,
-                minimumSize: Size(width * 0.5, 45),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
                 ),
-                elevation: 0,
-              ),
-              child: Text(
-                S.of(context).next,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              ],
+            ),
+            SizedBox(height: height * 0.015),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (controller.isCalculatedTotalAvailable)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        S.of(context).totalAmount,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      SizedBox(height: height * 0.01),
+                      Text(
+                        controller.calculatedTotal,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                if (!controller.isCalculatedTotalAvailable) const Spacer(),
+                ElevatedButton(
+                  onPressed: controller.isBooking
+                      ? null
+                      : controller.onNextClick,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: controller.isTermsAccepted
+                        ? const Color(0xFFE30613)
+                        : Colors.grey,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey,
+                    minimumSize: Size(width * 0.5, 45),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: controller.isBooking
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          S.of(context).next,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                ),
+              ],
             ),
           ],
         ),

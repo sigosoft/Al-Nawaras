@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 class PaymobController extends GetxController {
   final PaymobService _paymobService = PaymobService();
-  
+
   bool isLoading = false;
 
   /// Generates the WebView payment URL for a given booking
@@ -23,7 +23,10 @@ class PaymobController extends GetxController {
         currency: currency,
       );
       if (url == null) {
-        Get.snackbar('Error', 'Failed to generate payment URL. Please try again.');
+        Get.snackbar(
+          'Error',
+          'Failed to generate payment URL. Please try again.',
+        );
       }
       return url;
     } catch (e) {
@@ -36,48 +39,88 @@ class PaymobController extends GetxController {
     }
   }
 
-  /// Verifies the final payment status after the WebView is closed
-  Future<bool> verifyPaymentStatus(int bookingId) async {
-    isLoading = true;
-    update();
+  /// Verifies payment status after WebView closes.
+  /// [silent] skips the global loading flag so checkout is not blocked / overlaid.
+  Future<bool> verifyPaymentStatus(
+    int bookingId, {
+    bool silent = false,
+    int maxAttempts = 10,
+  }) async {
+    if (!silent) {
+      isLoading = true;
+      update();
+    }
 
     try {
       debugPrint('Waiting for webhook to process...');
-      
-      // Poll up to 5 times (every 2 seconds) to give the webhook time to arrive
-      for (int i = 0; i < 5; i++) {
-        await Future.delayed(const Duration(seconds: 2));
 
-        final response = await _paymobService.getPaymentStatus(bookingId: bookingId);
-        
-        if (response != null) {
-          final data = response['data'] ?? response;
-          
-          // The backend returns keys like 'is_paid', 'paymob_payment_status', or 'booking_state'
-          final state = data['state']?.toString().toLowerCase() ?? 
-                        data['paymob_payment_status']?.toString().toLowerCase() ?? 
-                        data['booking_state']?.toString().toLowerCase();
-                        
-          final isPaid = data['paid'] == true || 
-                         data['is_paid'] == true || 
-                         state == 'paid' || 
-                         state == 'success';
-          
-          if (isPaid) {
-            return true; // Webhook processed successfully!
-          }
+      for (int i = 0; i < maxAttempts; i++) {
+        if (i > 0) {
+          await Future.delayed(const Duration(seconds: 2));
+        } else {
+          await Future.delayed(const Duration(milliseconds: 400));
         }
-        debugPrint('Payment status not updated yet. Retrying (${i + 1}/5)...');
+
+        final response =
+            await _paymobService.getPaymentStatus(bookingId: bookingId);
+
+        if (response != null && _isPaidResponse(response)) {
+          return true;
+        }
+        debugPrint(
+          'Payment status not updated yet. Retrying (${i + 1}/$maxAttempts)...',
+        );
       }
-      
-      // If we reach here, we polled 5 times and the backend still hasn't confirmed the payment.
+
       return false;
     } catch (e) {
       debugPrint('Paymob verifyPaymentStatus error: $e');
       return false;
     } finally {
-      isLoading = false;
-      update();
+      if (!silent) {
+        isLoading = false;
+        update();
+      }
     }
+  }
+
+  bool _isPaidResponse(Map<String, dynamic> response) {
+    final data = response['data'] is Map
+        ? Map<String, dynamic>.from(response['data'] as Map)
+        : response;
+
+    final state = (data['state'] ??
+            data['paymob_payment_status'] ??
+            data['booking_state'] ??
+            data['payment_status'] ??
+            data['status'] ??
+            '')
+        .toString()
+        .toLowerCase()
+        .trim();
+
+    final txn = (data['txn_response_code'] ??
+            data['data.message'] ??
+            data['message'] ??
+            '')
+        .toString()
+        .toUpperCase()
+        .trim();
+
+    final isPaidRaw = data['paid'] ?? data['is_paid'];
+
+    return isPaidRaw == true ||
+        isPaidRaw == 1 ||
+        isPaidRaw == '1' ||
+        isPaidRaw.toString().toLowerCase() == 'true' ||
+        isPaidRaw.toString().toLowerCase() == 'paid' ||
+        state == 'paid' ||
+        state == 'success' ||
+        state == 'successful' ||
+        state == 'completed' ||
+        state == 'approved' ||
+        txn == 'APPROVED' ||
+        txn == 'SUCCESS' ||
+        txn == '00';
   }
 }

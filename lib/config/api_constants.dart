@@ -1,86 +1,86 @@
-class ApiConstants {
-  static const String baseUrl =
-      'https://rta-parking-staging-36861909.dev.odoo.com/api/';
+import 'app_config.dart';
 
-  //static const String baseUrl =
-  //'https://rta-parking-staging-33387092.dev.odoo.com/api/'; 
+class ApiConstants {
+  /// Runtime base URL (dynamic). Updated from remote config / cache.
+  static String get baseUrl => AppConfig.instance.apiBaseUrl;
+
+  /// Fallback baked into the app (used before remote config / if fetch fails).
+  static const String defaultBaseUrl = AppConfig.defaultApiBaseUrl;
 
   // Auth
-  static const String login = '${baseUrl}login';
-  static const String register = '${baseUrl}register';
-  static const String checkUser = '${baseUrl}check_user';
-  static const String forgotPassword = '${baseUrl}forgot-password';
-  static const String socialLogin = '${baseUrl}social_login';
-  static const String logout = '${baseUrl}logout';
+  static String get login => '${baseUrl}login';
+  static String get register => '${baseUrl}register';
+  static String get checkUser => '${baseUrl}check_user';
+  static String get forgotPassword => '${baseUrl}forgot-password';
+  static String get socialLogin => '${baseUrl}social_login';
+  static String get logout => '${baseUrl}logout';
 
   // Profile
-  static const String profile = '${baseUrl}profile';
-  static const String updateprofile = '${baseUrl}profile/update';
+  static String get profile => '${baseUrl}profile';
+  static String get updateprofile => '${baseUrl}profile/update';
 
   // Support & Legal
-  static const String support = '${baseUrl}support';
-  static const String privacyPolicy = '${baseUrl}privacy_policy';
-  static const String about = '${baseUrl}about';
+  static String get support => '${baseUrl}support';
+  static String get privacyPolicy => '${baseUrl}privacy_policy';
+  static String get about => '${baseUrl}about';
+  static String get termsAndConditions => '${baseUrl}terms_and_conditions';
 
   // Chat
-  static const String getMessages = '${baseUrl}messages';
-  static const String sendMessage = '${baseUrl}messages/send';
+  static String get getMessages => '${baseUrl}messages';
+  static String get sendMessage => '${baseUrl}messages/send';
 
   // Forgot Password
-  static const String sendOtp = '${baseUrl}forgot_password/send_otp';
-  static const String verifyOtp = '${baseUrl}forgot_password/verify_otp';
+  static String get sendOtp => '${baseUrl}forgot_password/send_otp';
+  static String get verifyOtp => '${baseUrl}forgot_password/verify_otp';
 
   // Home
-  static const String home = '${baseUrl}home';
+  static String get home => '${baseUrl}home';
 
   // Parking
-  static const String locationDetails = '${baseUrl}parking/location_details';
-  static const String slotDetails = '${baseUrl}parking/slot_details';
-  static const String confirmLocation = '${baseUrl}parking/confirm_location';
-  static const String parkingBook = '${baseUrl}parking/book';
-  static const String parkingTypes = '${baseUrl}parking/types';
-  static const String availableSummary = '${baseUrl}parking/available_summary';
-  static const String checkAvailability =
-      '${baseUrl}parking/check_availability';
+  static String get locationDetails => '${baseUrl}parking/location_details';
+  static String get slotDetails => '${baseUrl}parking/slot_details';
+  static String get confirmLocation => '${baseUrl}parking/confirm_location';
+  static String get parkingBook => '${baseUrl}parking/book';
+  static String get parkingTypes => '${baseUrl}parking/types';
+  static String get availableSummary => '${baseUrl}parking/available_summary';
+  static String get checkAvailability => '${baseUrl}parking/check_availability';
 
   // Memberships
-  static const String memberships = '${baseUrl}memberships';
+  static String get memberships => '${baseUrl}memberships';
 
   // Additional Services
-  static const String services = '${baseUrl}services';
+  static String get services => '${baseUrl}services';
 
   // Booking History
-  static const String parkingHistory = '${baseUrl}parking/history';
+  static String get parkingHistory => '${baseUrl}parking/history';
 
   // Rewards
-  static const String rewards = '${baseUrl}rewards';
+  static String get rewards => '${baseUrl}rewards';
 
   // Vehicles
-  static const String vehicles = '${baseUrl}vehicles';
-
-  /// fetch vehicle details
+  static String get vehicles => '${baseUrl}vehicles';
 
   // Vehicle Types
-  static const String vehicleTypes = '${baseUrl}vehicle_types';
+  static String get vehicleTypes => '${baseUrl}vehicle_types';
 
   // Settings
-  static const String settings = '${baseUrl}settings';
+  static String get settings => '${baseUrl}settings';
 
   // Payment
-  static const String paymentSummary = '${baseUrl}payment/summary';
+  static String get paymentSummary => '${baseUrl}payment/summary';
 
   // Notifications
-  static const String notifications = '${baseUrl}notifications';
-  static const String readNotification = '${baseUrl}notifications/read';
-  static const String search = '${baseUrl}search';
-  static const String lookup = '${baseUrl}lookup';
+  static String get notifications => '${baseUrl}notifications';
+  static String get readNotification => '${baseUrl}notifications/read';
+  static String get search => '${baseUrl}search';
+  static String get lookup => '${baseUrl}lookup';
 
-  //  App Settings (Paymob Configuration)
-  static const String appSettings = '${baseUrl}settings';
+  // App Settings (Paymob Configuration)
+  static String get appSettings => '${baseUrl}settings';
 
   // Payment confirm
-  static const String paymentConfirm = '${baseUrl}payment/confirm';
+  static String get paymentConfirm => '${baseUrl}payment/confirm';
   // Paymob Integration (Backend Managed)
-  static const String paymobCreatePayment = '${baseUrl}paymob/create/payment';
-  static const String paymobPaymentStatus = '${baseUrl}paymob/payment-status';
+  static String get paymobCreatePayment => '${baseUrl}paymob/create/payment';
+  static String get paymobPaymentStatus => '${baseUrl}paymob/payment-status';
 }

@@ -23,9 +23,12 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
   @override
   void initState() {
     super.initState();
-    // Fetch parking history when tab is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.find<HomeController>().fetchParkingHistory();
+      if (!Get.isRegistered<HomeController>()) return;
+      final home = Get.find<HomeController>();
+      home.currentIndex = 1;
+      home.fetchParkingHistory(reset: true);
+      home.update();
     });
   }
 
@@ -118,7 +121,7 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
             ],
           ),
           bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: 1,
+            currentIndex: controller.currentIndex,
             onTap: (index) {
               controller.changeBottomNavIndex(index);
             },

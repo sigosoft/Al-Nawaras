@@ -66,6 +66,7 @@ class _TabItem extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(

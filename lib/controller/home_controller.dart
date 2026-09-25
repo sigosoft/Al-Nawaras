@@ -722,8 +722,10 @@ class HomeController extends GetxController {
   }
 
   void changeBottomNavIndex(int index) {
-    if (currentIndex == index) return;
+    // Always navigate so taps remain responsive even if currentIndex is
+    // out of sync (e.g. after Get.off / deep links that bypass this method).
     currentIndex = index;
+    update();
     if (index == 0) {
       Get.offAll(() => const HomeScreen());
     } else if (index == 1) {
@@ -733,7 +735,6 @@ class HomeController extends GetxController {
     } else if (index == 3) {
       Get.offAll(() => const ProfileView());
     }
-    update();
   }
 
   List<Map<String, dynamic>> searchLocationsResults = [];
