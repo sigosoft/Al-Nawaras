@@ -107,6 +107,9 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ],
 
+                          SizedBox(height: height * 0.02),
+                          _buildRegisterButton(controller, context, height),
+
                           if (controller.isSectionVisible('plans', [
                             S.of(context).membershipPlans,
                             S.of(context).buy,
@@ -202,8 +205,6 @@ class HomeScreen extends StatelessWidget {
                               controller.onViewAllVehiclesClick,
                               height,
                             ),
-                            SizedBox(height: height * 0.02),
-                            _buildRegisterButton(controller, context, height),
                             SizedBox(height: height * 0.02),
                             if (controller.filteredVehicles.isEmpty)
                               Padding(

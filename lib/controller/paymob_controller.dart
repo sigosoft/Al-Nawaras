@@ -64,7 +64,7 @@ class PaymobController extends GetxController {
         final response =
             await _paymobService.getPaymentStatus(bookingId: bookingId);
 
-        if (response != null && _isPaidResponse(response)) {
+        if (response != null && _isConfirmedPaidResponse(response)) {
           return true;
         }
         debugPrint(
@@ -84,43 +84,41 @@ class PaymobController extends GetxController {
     }
   }
 
-  bool _isPaidResponse(Map<String, dynamic> response) {
-    final data = response['data'] is Map
-        ? Map<String, dynamic>.from(response['data'] as Map)
-        : response;
+  /// Success screen is allowed only when every paid-booking field matches.
+  bool _isConfirmedPaidResponse(Map<String, dynamic> response) {
+    final topStatus = response['status'];
+    final statusOk = topStatus == true ||
+        topStatus == 1 ||
+        topStatus.toString().toLowerCase() == 'true' ||
+        topStatus.toString() == '200';
 
-    final state = (data['state'] ??
-            data['paymob_payment_status'] ??
-            data['booking_state'] ??
-            data['payment_status'] ??
-            data['status'] ??
-            '')
+    final rawData = response['data'];
+    if (rawData is! Map) return false;
+    final data = Map<String, dynamic>.from(rawData);
+
+    final paymentStatus =
+        (data['paymob_payment_status'] ?? '').toString().toLowerCase().trim();
+    final bookingState = (data['booking_state'] ?? data['state'] ?? '')
         .toString()
         .toLowerCase()
         .trim();
-
-    final txn = (data['txn_response_code'] ??
-            data['data.message'] ??
-            data['message'] ??
-            '')
-        .toString()
-        .toUpperCase()
-        .trim();
-
-    final isPaidRaw = data['paid'] ?? data['is_paid'];
-
-    return isPaidRaw == true ||
+    final isPaidRaw = data['is_paid'];
+    final isPaid = isPaidRaw == true ||
         isPaidRaw == 1 ||
-        isPaidRaw == '1' ||
-        isPaidRaw.toString().toLowerCase() == 'true' ||
-        isPaidRaw.toString().toLowerCase() == 'paid' ||
-        state == 'paid' ||
-        state == 'success' ||
-        state == 'successful' ||
-        state == 'completed' ||
-        state == 'approved' ||
-        txn == 'APPROVED' ||
-        txn == 'SUCCESS' ||
-        txn == '00';
+        isPaidRaw.toString() == '1' ||
+        isPaidRaw.toString().toLowerCase() == 'true';
+    final statusMessage =
+        (data['status_message'] ?? '').toString().toLowerCase().trim();
+    final txnRef = data['transaction_ref'];
+    final hasTxnRef = txnRef != null &&
+        txnRef.toString().trim().isNotEmpty &&
+        txnRef.toString().toLowerCase() != 'null';
+
+    return statusOk &&
+        paymentStatus == 'success' &&
+        bookingState == 'booked' &&
+        isPaid &&
+        statusMessage.contains('payment confirmed') &&
+        hasTxnRef;
   }
 }

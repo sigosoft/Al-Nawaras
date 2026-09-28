@@ -381,15 +381,6 @@ class _PaymentViewState extends State<PaymentView> {
     final bookingId = widget.bookingId;
     if (bookingId == null) return;
 
-    // Gateway said success → show success immediately and leave checkout.
-    // Backend webhook may still be catching up; never show a false failure.
-    if (result == PaymobPaymentResult.success) {
-      _goToPaymentSuccess(totalStr);
-      _paymobController.verifyPaymentStatus(bookingId, silent: true);
-      return;
-    }
-
-    // Declined / closed / unclear → confirm with backend before deciding.
     Get.dialog(
       const Center(
         child: CircularProgressIndicator(color: Color(0xFFE30613)),
@@ -397,10 +388,10 @@ class _PaymentViewState extends State<PaymentView> {
       barrierDismissible: false,
     );
 
-    final isPaid = await _paymobController.verifyPaymentStatus(
+    final confirmed = await _paymobController.verifyPaymentStatus(
       bookingId,
       silent: true,
-      maxAttempts: result == PaymobPaymentResult.failed ? 5 : 10,
+      maxAttempts: result == PaymobPaymentResult.failed ? 5 : 15,
     );
 
     if (Get.isDialogOpen ?? false) {
@@ -408,7 +399,7 @@ class _PaymentViewState extends State<PaymentView> {
     }
     if (!mounted) return;
 
-    if (isPaid) {
+    if (confirmed) {
       _goToPaymentSuccess(totalStr);
       return;
     }
@@ -421,17 +412,16 @@ class _PaymentViewState extends State<PaymentView> {
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
-    } else {
-      // User closed WebView or result was unclear — do not claim failure
-      // when payment may still complete asynchronously.
-      Get.snackbar(
-        'Payment Status',
-        'Payment was not confirmed yet. Check Bookings if the charge went through.',
-        backgroundColor: Colors.orange[800],
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      return;
     }
+
+    Get.snackbar(
+      'Payment Status',
+      'Payment is still being confirmed. Please check Bookings in a moment.',
+      backgroundColor: Colors.orange[800],
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
   void _goToPaymentSuccess(String totalStr) {

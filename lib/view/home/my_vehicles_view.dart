@@ -27,56 +27,109 @@ class MyVehiclesView extends StatelessWidget {
             centerTitle: false,
             onBackPressed: () => Get.back(),
           ),
-          body: RefreshIndicator(
-            onRefresh: () => controller.loadMoreVehicles(),
-            color: const Color(0xFFE30613),
-            child: controller.filteredVehicles.isEmpty
-                ? CustomNoData(
-                    message: S.of(context).currentlyNoItemsFoundPleaseTryLater,
-                  )
-                : NotificationListener<ScrollNotification>(
-                    onNotification: (ScrollNotification scrollInfo) {
-                      if (scrollInfo.metrics.pixels ==
-                          scrollInfo.metrics.maxScrollExtent) {
-                        controller.loadMoreVehicles();
-                      }
-                      return true;
-                    },
-                    child: ListView.builder(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: width * 0.05,
-                        vertical: height * 0.02,
-                      ),
-                      itemCount:
-                          controller.filteredVehicles.length +
-                          (controller.isVehicleLoading ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        if (index == controller.filteredVehicles.length) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          );
-                        }
-                        final vehicle = controller.filteredVehicles[index];
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: height * 0.015),
-                          child: _buildVehicleCard(
-                            vehicle['title'],
-                            S.of(context).license(vehicle['license']),
-                            vehicle['isParked'],
-                            vehicle['isParked']
-                                ? S.of(context).parkedAtSpot(vehicle['spot'])
-                                : S.of(context).awayFromParking,
-                            vehicle['image'],
-                            height,
-                            width,
-                          ),
-                        );
-                      },
+          body: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  width * 0.05,
+                  height * 0.02,
+                  width * 0.05,
+                  0,
+                ),
+                child: OutlinedButton(
+                  onPressed: controller.onRegisterVehicleClick,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFE30613),
+                    side: const BorderSide(
+                      color: Color(0xFFE30613),
+                      width: 1.5,
+                    ),
+                    minimumSize: Size(double.infinity, height * 0.055),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  child: Text(
+                    S.of(context).registerNewVehicle,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => controller.loadMoreVehicles(reset: true),
+                  color: const Color(0xFFE30613),
+                  child: controller.filteredVehicles.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(
+                              height: height * 0.45,
+                              child: CustomNoData(
+                                message: S
+                                    .of(context)
+                                    .currentlyNoItemsFoundPleaseTryLater,
+                              ),
+                            ),
+                          ],
+                        )
+                      : NotificationListener<ScrollNotification>(
+                          onNotification: (ScrollNotification scrollInfo) {
+                            if (scrollInfo.metrics.pixels ==
+                                scrollInfo.metrics.maxScrollExtent) {
+                              controller.loadMoreVehicles();
+                            }
+                            return true;
+                          },
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: width * 0.05,
+                              vertical: height * 0.02,
+                            ),
+                            itemCount: controller.filteredVehicles.length +
+                                (controller.isVehicleLoading ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index ==
+                                  controller.filteredVehicles.length) {
+                                return const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                );
+                              }
+                              final vehicle =
+                                  controller.filteredVehicles[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: height * 0.015,
+                                ),
+                                child: _buildVehicleCard(
+                                  vehicle['title'],
+                                  S.of(context).license(vehicle['license']),
+                                  vehicle['isParked'],
+                                  vehicle['isParked']
+                                      ? S
+                                          .of(context)
+                                          .parkedAtSpot(vehicle['spot'])
+                                      : S.of(context).awayFromParking,
+                                  vehicle['image'],
+                                  height,
+                                  width,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                ),
+              ),
+            ],
           ),
         );
       },
