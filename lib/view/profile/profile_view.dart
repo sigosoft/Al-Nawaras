@@ -87,7 +87,8 @@ class ProfileView extends StatelessWidget {
                             _buildMenuList(context, width),
                             SizedBox(height: height * 0.03),
                             _buildSignOutButton(context, width),
-                            SizedBox(height: height * 0.02),
+                            // Room to scroll Sign Out clear of the help button.
+                            const SizedBox(height: 110),
                           ],
                         ),
                       ),

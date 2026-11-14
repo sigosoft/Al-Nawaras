@@ -107,7 +107,8 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
                     else
                       ..._buildDynamicCategorizedHistory(controller),
 
-                    const SizedBox(height: 80), // Space for bottom nav
+                    // Room to scroll the last card clear of the help button.
+                    const SizedBox(height: 110),
                   ],
                 ),
               ),
@@ -136,7 +137,9 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
           height: 300,
           child: Center(
             child: CustomNoData(
-              message: S.of(context).noEntriesForTab(_selectedTab),
+              message: _selectedTab == 'Active'
+                  ? S.of(context).noActiveBookings
+                  : S.of(context).noCompletedBookings,
             ),
           ),
         ),

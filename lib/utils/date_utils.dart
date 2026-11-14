@@ -18,7 +18,7 @@ class AppDateUtils {
     return parsed?.toLocal();
   }
 
-  /// Formats an API UTC timestamp as local "dd/MM/yyyy hh:mm a".
+  /// Formats an API UTC timestamp as local "dd/MM/yyyy hh:mm a", for display.
   /// Values that are not dates are returned unchanged (e.g. "N/A").
   static String formatApiUtc(dynamic value, {String fallback = 'N/A'}) {
     final dt = parseApiUtc(value);
@@ -26,6 +26,11 @@ class AppDateUtils {
       final s = value?.toString() ?? '';
       return (s.isEmpty || s == 'false') ? fallback : s;
     }
-    return DateFormat('dd/MM/yyyy hh:mm a').format(dt);
+    // Formatted in the current app language ("12:41 PM" / "12:41 م").
+    final text = DateFormat('dd/MM/yyyy hh:mm a').format(dt);
+    if (!Intl.getCurrentLocale().startsWith('en')) return text;
+    // English text is wrapped in a left-to-right isolate (U+2066 ... U+2069)
+    // so it still reads "12:41 PM", not "PM 12:41", if shown in Arabic layout.
+    return '${String.fromCharCode(0x2066)}$text${String.fromCharCode(0x2069)}';
   }
 }

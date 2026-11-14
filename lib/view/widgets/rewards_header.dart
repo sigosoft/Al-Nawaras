@@ -159,6 +159,8 @@ class RewardsHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   phoneNumber,
+                  // Keep "+971..." in order in Arabic layout.
+                  textDirection: TextDirection.ltr,
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
                 const SizedBox(height: 2),

@@ -145,7 +145,7 @@ class _PaymentViewState extends State<PaymentView> {
               return const SizedBox.shrink();
             },
           ),
-          const DraggableHelpButton(),
+          const DraggableHelpButton(bottomOffset: 170),
         ],
       ),
     );

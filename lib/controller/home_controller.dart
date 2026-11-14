@@ -332,12 +332,12 @@ class HomeController extends GetxController {
                     datePart = DateFormat('MMM dd').format(dt);
                   }
 
-                  displaySub = "$datePart, ${DateFormat('hh:mm a').format(dt)}";
+                  displaySub = "$datePart${Intl.getCurrentLocale().startsWith('ar') ? '، ' : ', '}${DateFormat('hh:mm a').format(dt)}";
                 }
               } catch (_) {}
 
               if (amount > 0) {
-                displaySub += ' AED $amount';
+                displaySub += ' ${S.of(Get.context!).currency.trim()} $amount';
               } else if (a['location'] != null && a['location'] != "false") {
                 displaySub += '-${S.of(Get.context!).spotLabel(a['location'].toString())}';
               }
@@ -698,12 +698,12 @@ class HomeController extends GetxController {
                   } else {
                     datePart = DateFormat('MMM dd').format(dt);
                   }
-                  displaySub = "$datePart, ${DateFormat('hh:mm a').format(dt)}";
+                  displaySub = "$datePart${Intl.getCurrentLocale().startsWith('ar') ? '، ' : ', '}${DateFormat('hh:mm a').format(dt)}";
                 }
               } catch (_) {}
 
               if (amount > 0) {
-                displaySub += ' AED $amount';
+                displaySub += ' ${S.of(Get.context!).currency.trim()} $amount';
               } else if (a['location'] != null && a['location'] != "false") {
                 displaySub += '-${S.of(Get.context!).spotLabel(a['location'].toString())}';
               }
@@ -873,8 +873,9 @@ class HomeController extends GetxController {
     changeBottomNavIndex(3);
   }
 
+  /// Renewing a membership means picking a plan again.
   void onRenewClick() {
-    if (kDebugMode) print("Renew Clicked");
+    Get.to(() => const MembershipPlansScreen());
   }
 
   void onBookParkingClick() {

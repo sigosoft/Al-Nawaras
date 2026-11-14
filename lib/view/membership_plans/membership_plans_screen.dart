@@ -9,6 +9,19 @@ import '../widgets/custom_no_data.dart';
 class MembershipPlansScreen extends StatelessWidget {
   const MembershipPlansScreen({super.key});
 
+  /// Turns the API duration ("Hourly", "Daily", "Monthly"...) into the unit
+  /// shown after "per", e.g. "per hour". Unknown values are shown as-is.
+  static String _periodUnit(BuildContext context, dynamic period) {
+    final s = S.of(context);
+    final p = (period ?? 'month').toString().trim().toLowerCase();
+    if (p.startsWith('hour')) return s.periodHour;
+    if (p.startsWith('dai') || p.startsWith('day')) return s.periodDay;
+    if (p.startsWith('week')) return s.periodWeek;
+    if (p.startsWith('month')) return s.periodMonth;
+    if (p.startsWith('year') || p.startsWith('annual')) return s.periodYear;
+    return p;
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -72,7 +85,8 @@ class MembershipPlansScreen extends StatelessWidget {
                             ),
                           );
                         }),
-                      SizedBox(height: height * 0.05),
+                      // Room to scroll the last plan clear of the help button.
+                      const SizedBox(height: 110),
                     ],
                   ),
                 ),
@@ -155,7 +169,7 @@ class MembershipPlansScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${S.of(context).per} ${(plan['period'] ?? 'month')}',
+                          '${S.of(context).per} ${_periodUnit(context, plan['period'])}',
                           style: const TextStyle(
                             fontSize: 11,
                             color: Colors.black38,

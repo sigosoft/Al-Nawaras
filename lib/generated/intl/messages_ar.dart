@@ -463,9 +463,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "next": MessageLookupByLibrary.simpleMessage("التالي"),
     "no": MessageLookupByLibrary.simpleMessage("لا"),
     "noActiveBooking": MessageLookupByLibrary.simpleMessage("لا يوجد حجز نشط"),
+    "noActiveBookings": MessageLookupByLibrary.simpleMessage(
+      "لا توجد حجوزات نشطة",
+    ),
     "noActivePlan": MessageLookupByLibrary.simpleMessage("لا توجد خطة نشطة"),
     "noBookingHistoryFound": MessageLookupByLibrary.simpleMessage(
       "لم يتم العثور على سجل حجوزات",
+    ),
+    "noCompletedBookings": MessageLookupByLibrary.simpleMessage(
+      "لا توجد حجوزات مكتملة",
     ),
     "noDataAvailable": MessageLookupByLibrary.simpleMessage("لا تتوفر بيانات"),
     "noDescriptionAvailable": MessageLookupByLibrary.simpleMessage(
@@ -575,6 +581,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "paymentSummary": MessageLookupByLibrary.simpleMessage("ملخص الدفع"),
     "per": MessageLookupByLibrary.simpleMessage("لكل"),
+    "periodDay": MessageLookupByLibrary.simpleMessage("يوم"),
+    "periodHour": MessageLookupByLibrary.simpleMessage("ساعة"),
+    "periodMonth": MessageLookupByLibrary.simpleMessage("شهر"),
+    "periodWeek": MessageLookupByLibrary.simpleMessage("أسبوع"),
+    "periodYear": MessageLookupByLibrary.simpleMessage("سنة"),
     "personalInformation": MessageLookupByLibrary.simpleMessage(
       "المعلومات الشخصية",
     ),

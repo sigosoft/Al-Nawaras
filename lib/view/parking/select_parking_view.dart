@@ -461,7 +461,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
 
   Future<void> _continueToBooking() async {
     if (selectedSlotCode.isEmpty || selectedSlotNumber.isEmpty) {
-      _showCustomSnackBar(S.of(context).errorConfirmingLocation, isError: true);
+      _showCustomSnackBar(S.of(context).selectSlotOnMapFirst, isError: true);
       return;
     }
     _saveSelectedSlot();

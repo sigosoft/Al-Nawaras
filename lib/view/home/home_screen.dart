@@ -333,7 +333,8 @@ class HomeScreen extends StatelessWidget {
                                   .toList(),
                           ],
 
-                          SizedBox(height: height * 0.05), // Bottom padding
+                          // Room to scroll the last item clear of the help button.
+                          const SizedBox(height: 110),
                         ],
                       ),
                     ),

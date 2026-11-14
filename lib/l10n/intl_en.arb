@@ -1042,5 +1042,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "periodHour": "hour",
+  "periodDay": "day",
+  "periodWeek": "week",
+  "periodMonth": "month",
+  "periodYear": "year",
+  "noActiveBookings": "No active bookings",
+  "noCompletedBookings": "No completed bookings"
 }

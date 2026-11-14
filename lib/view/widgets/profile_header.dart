@@ -139,6 +139,8 @@ class ProfileHeader extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     mobile,
+                    // Keep "+971..." in order in Arabic layout.
+                    textDirection: TextDirection.ltr,
                     style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 2),

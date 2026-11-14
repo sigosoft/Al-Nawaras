@@ -750,5 +750,12 @@
   "supportLabel": "الدعم",
   "durationDays": "{count, plural, =1{يوم واحد} =2{يومان} few{{count} أيام} many{{count} يومًا} other{{count} يوم}}",
   "durationHours": "{count, plural, =1{ساعة واحدة} =2{ساعتان} few{{count} ساعات} many{{count} ساعة} other{{count} ساعة}}",
-  "durationMinutes": "{count, plural, =1{دقيقة واحدة} =2{دقيقتان} few{{count} دقائق} many{{count} دقيقة} other{{count} دقيقة}}"
+  "durationMinutes": "{count, plural, =1{دقيقة واحدة} =2{دقيقتان} few{{count} دقائق} many{{count} دقيقة} other{{count} دقيقة}}",
+  "periodHour": "ساعة",
+  "periodDay": "يوم",
+  "periodWeek": "أسبوع",
+  "periodMonth": "شهر",
+  "periodYear": "سنة",
+  "noActiveBookings": "لا توجد حجوزات نشطة",
+  "noCompletedBookings": "لا توجد حجوزات مكتملة"
 }

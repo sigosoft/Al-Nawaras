@@ -74,7 +74,8 @@ class AdditionalServicesScreen extends StatelessWidget {
                             ),
                           );
                         }),
-                      SizedBox(height: height * 0.05),
+                      // Room to scroll the last item clear of the help button.
+                      const SizedBox(height: 110),
                     ],
                   ),
                 ),

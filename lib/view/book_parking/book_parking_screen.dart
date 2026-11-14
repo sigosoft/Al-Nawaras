@@ -185,7 +185,7 @@ class BookParkingScreen extends StatelessWidget {
                   _buildBottomAction(context, controller, width, height),
                 ],
               ),
-              const DraggableHelpButton(),
+              const DraggableHelpButton(bottomOffset: 170),
             ],
           ),
         );

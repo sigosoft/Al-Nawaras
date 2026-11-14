@@ -3929,6 +3929,51 @@ class S {
       args: [count],
     );
   }
+
+  /// `hour`
+  String get periodHour {
+    return Intl.message('hour', name: 'periodHour', desc: '', args: []);
+  }
+
+  /// `day`
+  String get periodDay {
+    return Intl.message('day', name: 'periodDay', desc: '', args: []);
+  }
+
+  /// `week`
+  String get periodWeek {
+    return Intl.message('week', name: 'periodWeek', desc: '', args: []);
+  }
+
+  /// `month`
+  String get periodMonth {
+    return Intl.message('month', name: 'periodMonth', desc: '', args: []);
+  }
+
+  /// `year`
+  String get periodYear {
+    return Intl.message('year', name: 'periodYear', desc: '', args: []);
+  }
+
+  /// `No active bookings`
+  String get noActiveBookings {
+    return Intl.message(
+      'No active bookings',
+      name: 'noActiveBookings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No completed bookings`
+  String get noCompletedBookings {
+    return Intl.message(
+      'No completed bookings',
+      name: 'noCompletedBookings',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

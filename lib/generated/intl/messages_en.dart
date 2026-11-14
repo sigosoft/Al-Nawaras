@@ -473,9 +473,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "noActiveBooking": MessageLookupByLibrary.simpleMessage(
       "No active booking found",
     ),
+    "noActiveBookings": MessageLookupByLibrary.simpleMessage(
+      "No active bookings",
+    ),
     "noActivePlan": MessageLookupByLibrary.simpleMessage("No Active Plan"),
     "noBookingHistoryFound": MessageLookupByLibrary.simpleMessage(
       "No booking history found",
+    ),
+    "noCompletedBookings": MessageLookupByLibrary.simpleMessage(
+      "No completed bookings",
     ),
     "noDataAvailable": MessageLookupByLibrary.simpleMessage(
       "No data available",
@@ -583,6 +589,11 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "paymentSummary": MessageLookupByLibrary.simpleMessage("Payment Summary"),
     "per": MessageLookupByLibrary.simpleMessage("per"),
+    "periodDay": MessageLookupByLibrary.simpleMessage("day"),
+    "periodHour": MessageLookupByLibrary.simpleMessage("hour"),
+    "periodMonth": MessageLookupByLibrary.simpleMessage("month"),
+    "periodWeek": MessageLookupByLibrary.simpleMessage("week"),
+    "periodYear": MessageLookupByLibrary.simpleMessage("year"),
     "personalInformation": MessageLookupByLibrary.simpleMessage(
       "Personal Information",
     ),
