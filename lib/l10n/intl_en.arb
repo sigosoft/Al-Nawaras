@@ -353,6 +353,8 @@
   "locationTypeLabel": "Location Type : ",
   "@locationTypeLabel": {},
   "sizeLabel": "Parking Size : ",
+  "sizeShortLabel": "Size:",
+  "@sizeShortLabel": {},
   "@sizeLabel": {},
   "confirmLocation": "Confirm Location",
   "@confirmLocation": {},

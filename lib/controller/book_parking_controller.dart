@@ -1148,12 +1148,15 @@ class BookParkingController extends GetxController {
               bookData['state']?.toString().toLowerCase() ?? '';
           final needsConfirm =
               bookingState == 'draft' || bookingState == 'pending_payment';
-          // Regular Book Parking: parking/book currently ignores slot_id and
-          // returns "booked" with no slot, so assign the chosen slot here.
-          // The booking already exists, so a failure must not block payment.
-          final assignBookedSlot = !fromSmartParking &&
-              bookingState == 'booked' &&
-              slotToConfirm != null;
+          // parking/book currently ignores slot_id and slot_number and
+          // returns "booked" with no slot (verified on staging, Nov 2026),
+          // so assign the chosen slot here. For Smart Parking, skip the call
+          // only if the server did save the map slot. The booking already
+          // exists, so a failure must not block payment.
+          final assignBookedSlot = bookingState == 'booked' &&
+              slotToConfirm != null &&
+              !(fromSmartParking &&
+                  await _bookingHasSlot(bookingId!, slotToConfirm));
 
           if (assignBookedSlot) {
             final assigned = await confirmBookingLocation(
@@ -1510,6 +1513,31 @@ class BookParkingController extends GetxController {
   void onClose() {
     // Rely on GetX lifecycle for cleanup to avoid "used after disposed" errors
     super.onClose();
+  }
+
+  /// Whether `parking/location_details` already lists [slotName] for the
+  /// booking. Any error counts as "no", so the caller assigns the slot.
+  Future<bool> _bookingHasSlot(int bId, String slotName) async {
+    try {
+      final token = GetStorage().read('token');
+      final resp = await BaseClient.dio.get(
+        ApiConstants.locationDetails,
+        queryParameters: {'booking_id': bId},
+        options: Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+      final data = resp.data is Map ? resp.data['data'] : null;
+      final saved = data is Map ? data['slot_number']?.toString() ?? '' : '';
+      String norm(String s) => s.toUpperCase().replaceAll(RegExp(r'\s+'), '');
+      return saved.isNotEmpty && norm(saved) == norm(slotName);
+    } catch (e) {
+      debugPrint('Could not read booking slot for $bId: $e');
+      return false;
+    }
   }
 
   Future<bool> confirmBookingLocation(int bId, String sName, int? sId) async {

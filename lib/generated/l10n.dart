@@ -1394,6 +1394,11 @@ class S {
     );
   }
 
+  /// `Size:`
+  String get sizeShortLabel {
+    return Intl.message('Size:', name: 'sizeShortLabel', desc: '', args: []);
+  }
+
   /// `Confirm Location`
   String get confirmLocation {
     return Intl.message(

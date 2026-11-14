@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:al_nawaras/view/book_parking/book_parking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -9,58 +11,13 @@ import '../../controller/book_parking_controller.dart';
 import '../../generated/l10n.dart';
 import '../../utils/slot_size_utils.dart';
 import '../../utils/api_labels.dart';
-import 'dart:math' as math;
+import 'parking_map.dart';
 
-class _SlotRowConfig {
-  final double top;
-  final double sec1StartX;
-  final int sec1Count;
-  final double sec2StartX;
-  final int sec2Count;
-  final double slotW;
-  final double slotH;
-  final String prefix;
-
-  _SlotRowConfig({
-    required this.top,
-    required this.sec1StartX,
-    required this.sec1Count,
-    required this.sec2StartX,
-    required this.sec2Count,
-    required this.slotW,
-    required this.slotH,
-    required this.prefix,
-  });
-}
-
-/// Localized text painted on the parking map canvas.
-class _MapLabels {
-  final String jetskiTrailer;
-  final String boatsA;
-  final String boatsAShaded;
-  final String boatsB;
-  final String boatsBShaded;
-  final String foodTruck17;
-  final String foodTruck13;
-  final String caravanB;
-  final String caravanBShaded;
-  final String caravanAShaded;
-  final String exit;
-  final String entrance;
-
-  _MapLabels.of(BuildContext context)
-    : jetskiTrailer = S.of(context).mapJetskiTrailerParking,
-      boatsA = S.of(context).mapBoatsParking('A'),
-      boatsAShaded = S.of(context).mapBoatsParkingShaded('A'),
-      boatsB = S.of(context).mapBoatsParking('B'),
-      boatsBShaded = S.of(context).mapBoatsParkingShaded('B'),
-      foodTruck17 = S.of(context).mapFoodTruckParkingLength('17'),
-      foodTruck13 = S.of(context).mapFoodTruckParkingLength('13'),
-      caravanB = S.of(context).mapCaravanParking('B'),
-      caravanBShaded = S.of(context).mapCaravanParkingShaded('B'),
-      caravanAShaded = S.of(context).mapCaravanParkingShaded('A'),
-      exit = S.of(context).mapExit,
-      entrance = S.of(context).mapEntrance;
+/// Design tokens from the XD "Select Parking Location" screen.
+class _Design {
+  static const Color red = Color(0xFFE50018);
+  static const Color background = Color(0xFFF5F5F5);
+  static const double headerHeight = 71;
 }
 
 class SelectParkingView extends StatefulWidget {
@@ -77,94 +34,40 @@ class SelectParkingView extends StatefulWidget {
 }
 
 class _SelectParkingViewState extends State<SelectParkingView> {
-  String selectedSlotCode = ""; // Empty by default
-  String selectedSlotNumber = ""; // Empty by default
-  String selectedLocationCode = ""; // Empty by default
+  final ParkingMapLayout _map = ParkingMapLayout.instance;
+
+  /// Map slot id, e.g. "FT17-12". Empty when nothing is selected.
+  String selectedSlotCode = "";
+
+  /// Backend slot name, e.g. "C12 - FOOD TRUCK".
+  String selectedSlotNumber = "";
+  String selectedLocationCode = "";
   String selectedLocation = "";
   String selectedLocationType = "";
   String selectedSlotSize = "";
   bool isLoadingData = false;
   bool noActiveBooking = false; // direction mode: user has no booking to show
 
-  List<String> bookedSlots = [];
-  List<String> shadedSlots = [];
+  Set<String> bookedSlots = {};
+  Set<String> shadedSlots = {};
   Map<String, dynamic>? lookupVehicle;
   String _activeBookingVehicle = ""; // e.g. "55555 (2023)" from history
   String initialConfirmedSlot = "";
 
-  final double canvasWidth = 3500.0;
-  final double canvasHeight = 900.0;
-
-  late final List<_SlotRowConfig> _slotRows;
   final TransformationController _transformationController =
       TransformationController();
+  Size? _viewport;
+
+  /// Horizontal scroll position of the map in the design (design px).
+  static const double _designScrollX = 171;
 
   @override
   void initState() {
     super.initState();
-    _slotRows = [
-      _SlotRowConfig(
-        top: 110,
-        sec1StartX: 250,
-        sec1Count: 17,
-        sec2StartX: 1200,
-        sec2Count: 47,
-        slotW: 42,
-        slotH: 48,
-        prefix: 'JTSP1',
-      ),
-      _SlotRowConfig(
-        top: 250,
-        sec1StartX: 250,
-        sec1Count: 17,
-        sec2StartX: 1200,
-        sec2Count: 47,
-        slotW: 42,
-        slotH: 48,
-        prefix: 'JTSP2',
-      ),
-      _SlotRowConfig(
-        top: 410,
-        sec1StartX: 250,
-        sec1Count: 17,
-        sec2StartX: 1200,
-        sec2Count: 47,
-        slotW: 42,
-        slotH: 50,
-        prefix: 'FTP17',
-      ),
-      _SlotRowConfig(
-        top: 570,
-        sec1StartX: 250,
-        sec1Count: 17,
-        sec2StartX: 1200,
-        sec2Count: 47,
-        slotW: 42,
-        slotH: 50,
-        prefix: 'FTP13A',
-      ),
-      _SlotRowConfig(
-        top: 730,
-        sec1StartX: 250,
-        sec1Count: 17,
-        sec2StartX: 1200,
-        sec2Count: 47,
-        slotW: 42,
-        slotH: 50,
-        prefix: 'FTP13B',
-      ),
-    ];
-
-    // Booked and Shaded slots are now dynamic.
-    // They will be populated as you select slots or if an API is provided to list all.
-    bookedSlots = [];
-    shadedSlots = [];
-    // Shaded slots for Section 2: 35 to 47
-    for (int i = 35; i <= 47; i++) {
-      for (final row in _slotRows) {
-        shadedSlots.add("${row.prefix}_S2-${i.toString().padLeft(2, '0')}");
-      }
-    }
+    shadedSlots = {
+      for (final s in _map.slots)
+        if (s.shadedInDesign) s.id,
+    };
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // In direction mode the backend booking is the source of truth; a
@@ -180,62 +83,60 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     });
   }
 
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Slot state helpers
+  // ---------------------------------------------------------------------------
+
+  /// Accepts either a map id ("FT17-12") or a backend name ("C12 - FOOD TRUCK").
+  MapSlot? _resolve(String code) {
+    if (code.isEmpty) return null;
+    return _map.byId(code) ?? _map.resolveBackendName(code);
+  }
+
+  void _markBooked(String code) {
+    final slot = _resolve(code);
+    if (slot != null) bookedSlots = {...bookedSlots, slot.id};
+  }
+
   void _applyGloballyConfirmedSlots() {
-    final storage = GetStorage();
-    final List<dynamic>? globalConfirmed = storage.read(
+    final List<dynamic>? globalConfirmed = GetStorage().read(
       'user_confirmed_parking_slots',
     );
-    if (globalConfirmed != null) {
-      for (var code in globalConfirmed) {
-        if (!bookedSlots.contains(code.toString())) {
-          bookedSlots.add(code.toString());
-        }
+    if (globalConfirmed == null) return;
+    setState(() {
+      for (final code in globalConfirmed) {
+        _markBooked(code.toString());
       }
-      debugPrint(
-        'Applied ${globalConfirmed.length} globally confirmed slots into bookedSlots.',
-      );
-    }
+    });
   }
 
   void _loadSavedSlot() {
     final storage = GetStorage();
     final key = 'selected_parking_slot_${widget.bookingId ?? "none"}';
     final saved = storage.read(key);
-    debugPrint('Loading saved slot from key: $key - Success: ${saved != null}');
-    if (saved != null && saved is Map) {
-      final code = (saved['code'] ?? "").toString();
-      var number = (saved['number'] ?? "").toString();
-
-      // Repair previously saved bad formats like "Bm x 35m - JETSKI"
-      if (code.contains('-') &&
-          (number.contains('m x') || number.contains('م x'))) {
-        final parts = code.split('-');
-        final index = int.tryParse(parts.last);
-        if (index != null) {
-          number = _formatSlotCode(parts.first, index);
-        }
-      }
-
-      setState(() {
-        selectedSlotCode = code;
-        selectedSlotNumber = number;
-        selectedLocationCode = saved['locationCode'] ?? "";
-        selectedLocation = saved['location'] ?? "";
-        selectedLocationType = saved['locationType'] ?? "";
-        selectedSlotSize = saved['size'] ?? "";
-      });
-
-      if (code.isNotEmpty && number.isNotEmpty) {
-        _saveSelectedSlot();
-      }
-    }
+    if (saved is! Map) return;
+    // Selections saved by the old map layout use other ids; drop those.
+    final slot = _resolve((saved['code'] ?? "").toString());
+    if (slot == null) return;
+    setState(() {
+      selectedSlotCode = slot.id;
+      selectedSlotNumber = slot.backendName;
+      selectedLocationCode = (saved['locationCode'] ?? "").toString();
+      selectedLocation = (saved['location'] ?? "").toString();
+      selectedLocationType = (saved['locationType'] ?? "").toString();
+      selectedSlotSize = (saved['size'] ?? "").toString();
+    });
   }
 
   void _saveSelectedSlot() {
-    final storage = GetStorage();
     final key = 'selected_parking_slot_${widget.bookingId ?? "none"}';
-    debugPrint('Saving selected slot to key: $key - $selectedSlotCode');
-    storage.write(key, {
+    GetStorage().write(key, {
       'code': selectedSlotCode,
       'number': selectedSlotNumber,
       'locationCode': selectedLocationCode,
@@ -245,57 +146,38 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     });
   }
 
+  Map<String, dynamic> _headers() {
+    final token = GetStorage().read('token');
+    return {
+      if (token != null) 'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // API
+  // ---------------------------------------------------------------------------
+
   Future<void> _fetchVehicleTypes() async {
     try {
-      setState(() {
-        isLoadingData = true;
-      });
-
-      final dio = BaseClient.dio;
-      final storage = GetStorage();
-      final token = storage.read('token');
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      };
-
-      debugPrint('\n--- API REQUEST (vehicle_types) ---');
-      debugPrint('URL: ${ApiConstants.vehicleTypes}');
-      debugPrint('Headers: $headers');
-
-      final response = await dio.get(
+      setState(() => isLoadingData = true);
+      final response = await BaseClient.dio.get(
         ApiConstants.vehicleTypes,
-        options: Options(headers: headers),
+        options: Options(headers: _headers()),
       );
-
       debugPrint('--- API RESPONSE (vehicle_types) ---');
-      debugPrint('Status Code: ${response.statusCode}');
       debugPrint('Response Body: ${response.data}');
 
-      if (response.statusCode == 200 && response.data != null) {
-        if (response.data['status'] == true) {
-          final List types = response.data['data'] as List? ?? [];
-
-          if (mounted) {
-            setState(() {
-              // Demo logic removed as per implementation plan
-            });
-          }
-
-          if (types.isNotEmpty) {
-            // Check if we should fetch dynamic parking details based on vehicle types
-            _fetchDynamicParkingDetails();
-          }
-        }
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['status'] == true) {
+        final List types = response.data['data'] as List? ?? [];
+        if (types.isNotEmpty) _fetchDynamicParkingDetails();
       }
     } catch (e) {
       debugPrint('Error fetching vehicle types: $e');
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoadingData = false;
-        });
-      }
+      if (mounted) setState(() => isLoadingData = false);
     }
   }
 
@@ -304,27 +186,11 @@ class _SelectParkingViewState extends State<SelectParkingView> {
   Future<void> _lookupVehicle(String licenseNumber) async {
     if (licenseNumber.isEmpty) return;
     try {
-      final dio = BaseClient.dio;
-      final token = GetStorage().read('token');
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      };
-
-      debugPrint('\n--- API REQUEST (vehicles/lookup) ---');
-      debugPrint('URL: ${ApiConstants.vehicleLookup}');
-      debugPrint('Params: {license_number: $licenseNumber}');
-
-      final response = await dio.get(
+      final response = await BaseClient.dio.get(
         ApiConstants.vehicleLookup,
         queryParameters: {'license_number': licenseNumber},
-        options: Options(headers: headers),
+        options: Options(headers: _headers()),
       );
-
-      debugPrint('--- API RESPONSE (vehicles/lookup) ---');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.data}');
-
       final data = response.data is Map ? response.data['data'] : null;
       if (response.statusCode == 200 &&
           response.data['status'] == true &&
@@ -338,19 +204,12 @@ class _SelectParkingViewState extends State<SelectParkingView> {
       debugPrint('Error looking up vehicle: $e');
     }
   }
+
   Future<void> _fetchDynamicParkingDetails() async {
     try {
-      setState(() {
-        isLoadingData = true;
-      });
-
+      setState(() => isLoadingData = true);
       final dio = BaseClient.dio;
-      final storage = GetStorage();
-      final token = storage.read('token');
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      };
+      final headers = _headers();
 
       // Never fall back to a fixed booking id: booking_id=1 belongs to
       // another customer. In direction mode, use the user's own active
@@ -372,38 +231,28 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         return;
       }
 
-      debugPrint('\n--- API REQUEST (location_details) ---');
-      debugPrint('URL: ${ApiConstants.locationDetails}');
-      debugPrint('Parameters: {booking_id: $bookingId}');
-
-      // 1. Fetch location details
       final locationResponse = await dio.get(
         ApiConstants.locationDetails,
         queryParameters: {'booking_id': bookingId},
         options: Options(headers: headers),
       );
-
       debugPrint('--- API RESPONSE (location_details) ---');
-      debugPrint('Status Code: ${locationResponse.statusCode}');
       debugPrint('Response Data: ${locationResponse.data}');
-      debugPrint('--------------------------\n');
 
-      if (locationResponse.statusCode == 200 && locationResponse.data != null) {
-        if (locationResponse.data['status'] == true) {
-          final data = locationResponse.data['data'];
-          // Only proceed if we have a valid slot number, the booking is confirmed, and not expired
-          if (data != null &&
-              data['slot_number'] != null &&
-              data['slot_number'].toString().isNotEmpty &&
-              data['slot_number'].toString() != "false") {
-            final returnedSlotNumber = data['slot_number'].toString();
-            await _fetchSlotDetails(returnedSlotNumber, headers, dio);
-            return;
-          }
+      if (locationResponse.statusCode == 200 &&
+          locationResponse.data != null &&
+          locationResponse.data['status'] == true) {
+        final data = locationResponse.data['data'];
+        if (data != null &&
+            data['slot_number'] != null &&
+            data['slot_number'].toString().isNotEmpty &&
+            data['slot_number'].toString() != "false") {
+          await _fetchSlotDetails(data['slot_number'].toString(), headers, dio);
+          return;
         }
       }
 
-      // If we reach here in direction mode, it means no valid booking was found
+      // If we reach here in direction mode, no valid booking was found.
       if (mounted && widget.isDirectionMode) {
         setState(() {
           noActiveBooking = true;
@@ -414,16 +263,10 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     } catch (e) {
       debugPrint('Error fetching parking details: $e');
       if (mounted && widget.isDirectionMode) {
-        setState(() {
-          selectedSlotCode = "";
-        });
+        setState(() => selectedSlotCode = "");
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoadingData = false;
-        });
-      }
+      if (mounted) setState(() => isLoadingData = false);
     }
   }
 
@@ -471,45 +314,28 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     }
     return null;
   }
+
   Future<void> _fetchParkingHistory() async {
     try {
-      final dio = BaseClient.dio;
-      final storage = GetStorage();
-      final token = storage.read('token');
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      };
-
-      final response = await dio.get(
+      final response = await BaseClient.dio.get(
         ApiConstants.parkingHistory,
         queryParameters: {'limit': 100, 'offset': 0},
-        options: Options(headers: headers),
+        options: Options(headers: _headers()),
       );
-
-      if (response.statusCode == 200 && response.data != null) {
-        if (response.data['status'] == true) {
-          final List history = response.data['data']['history'] ?? [];
-          if (mounted) {
-            setState(() {
-              for (var booking in history) {
-                final slotStr = booking['slot']?.toString();
-                if (slotStr != null &&
-                    slotStr != "null" &&
-                    slotStr.isNotEmpty) {
-                  // Map the backend name (e.g. "A03 - JETSKI") to exactly one
-                  // map slot. Matching by prefix used to also grey out the
-                  // same number in the other Jetski row (B03).
-                  final code = _resolveMapCode(slotStr);
-                  if (code.isNotEmpty && !bookedSlots.contains(code)) {
-                    bookedSlots.add(code);
-                  }
-                }
-              }
-              _applyGloballyConfirmedSlots(); // Re-apply local ones after API fetch
-            });
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['status'] == true) {
+        final List history = response.data['data']['history'] ?? [];
+        if (!mounted) return;
+        setState(() {
+          for (final booking in history) {
+            final slotStr = booking['slot']?.toString();
+            if (slotStr != null && slotStr != "null" && slotStr.isNotEmpty) {
+              _markBooked(slotStr);
+            }
           }
-        }
+        });
+        _applyGloballyConfirmedSlots(); // Re-apply local ones after API fetch
       }
     } catch (e) {
       debugPrint('Error fetching history for booked slots: $e');
@@ -521,10 +347,6 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     Map<String, dynamic> headers,
     Dio dio,
   ) async {
-    debugPrint('\n--- API REQUEST (slot_details) ---');
-    debugPrint('URL: ${ApiConstants.slotDetails}');
-    debugPrint('Body: {"slot_number": "$slotNumber"}');
-
     final slotResponse = await dio.post(
       ApiConstants.slotDetails,
       data: {'slot_number': slotNumber},
@@ -533,238 +355,115 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         contentType: Headers.formUrlEncodedContentType,
       ),
     );
-
     debugPrint('--- API RESPONSE (slot_details) ---');
-    debugPrint('Status Code: ${slotResponse.statusCode}');
     debugPrint('Response Data: ${slotResponse.data}');
-    debugPrint('--------------------------\n');
 
-    if (slotResponse.statusCode == 200 && slotResponse.data != null) {
-      if (slotResponse.data['status'] == true) {
-        final data = slotResponse.data['data'];
-        if (mounted && data != null) {
-          setState(() {
-            // Do not overwrite selectedSlotCode with a computed value from a display string
-            // as the internal map code (prefix_S1/S2-number) is the source of truth.
-            /*
-            final prefix = _getPrefixFromSlotNumber(slotNumber);
-            final num = _getNumberFromSlotNumber(slotNumber);
-            if (prefix.isNotEmpty && num.isNotEmpty) {
-              selectedSlotCode = "$prefix-$num";
-            }
-            */
-
-            selectedLocation =
-                (data['location_name'] != null
-                    ? ApiLabels.translate(S.of(context), data['location_name'])
-                    : null) ??
-                _getFriendlyLocation(
-                  selectedSlotCode.isNotEmpty
-                      ? selectedSlotCode.split('-').first
-                      : slotNumber.split('-').first,
-                );
-            selectedLocationType =
-                data['location_type']?.toString() ??
-                _getLocationType(slotNumber.split('-').first, slotNumber);
-            final apiSize = SlotSizeUtils.read(data);
-            selectedSlotSize = apiSize.isNotEmpty
-                ? apiSize
-                : _getSlotSize(slotNumber.split('-').first);
-            selectedSlotNumber = data['slot_number']?.toString() ?? "N/A";
-            selectedLocationCode = data['location_code']?.toString() ?? "N/A";
-            if (widget.isDirectionMode) {
-              // Highlight the booked slot itself on the map.
-              selectedSlotCode = _resolveMapCode(selectedSlotNumber);
-            }
-
-            // If we are initially loading the slot from the backend for this booking
-            if (initialConfirmedSlot.isEmpty && selectedSlotNumber != "N/A") {
-              initialConfirmedSlot = selectedSlotNumber;
-            }
-
-            if (data.containsKey('is_booked')) {
-              if (data['is_booked'] == true) {
-                if (!bookedSlots.contains(selectedSlotCode)) {
-                  bookedSlots.add(selectedSlotCode);
-                }
-              } else {
-                bookedSlots.remove(selectedSlotCode);
-              }
-            }
-            if (data.containsKey('shaded_slot')) {
-              if (data['shaded_slot'] == true) {
-                if (!shadedSlots.contains(selectedSlotCode)) {
-                  shadedSlots.add(selectedSlotCode);
-                }
-              } else {
-                shadedSlots.remove(selectedSlotCode);
-              }
-            }
-          });
-        }
-      }
-    }
-  }
-
-  bool _isSameAsConfirmed() {
-    return initialConfirmedSlot.isNotEmpty &&
-        selectedSlotNumber == initialConfirmedSlot;
-  }
-
-  Future<void> _onSlotSelected(String codeString, String formattedSlot) async {
-    if (bookedSlots.contains(codeString)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(S.of(context).slotAlreadyBooked),
-          backgroundColor: const Color(0xFFE30613),
-        ),
-      );
+    if (slotResponse.statusCode != 200 ||
+        slotResponse.data == null ||
+        slotResponse.data['status'] != true) {
       return;
     }
+    final data = slotResponse.data['data'];
+    if (!mounted || data == null) return;
 
+    final number = data['slot_number']?.toString() ?? slotNumber;
+    final slot = _resolve(number);
     setState(() {
-      selectedSlotCode = codeString; // Keep internal code for UI matching
-      selectedSlotNumber = formattedSlot;
-      selectedLocation = _getFriendlyLocation(codeString.split('-').first);
-      selectedLocationType = _getLocationType(
-        codeString.split('-').first,
-        codeString,
-      );
+      selectedSlotNumber = number;
+      if (slot != null) {
+        selectedLocation = _locationName(slot);
+        selectedLocationType = _locationType(slot);
+        selectedSlotSize = _fallbackSize(slot);
+        if (widget.isDirectionMode || selectedSlotCode.isEmpty) {
+          selectedSlotCode = slot.id;
+        }
+      }
+      selectedLocationCode = slot?.displayCode ?? "";
+      if (slot == null) {
+        // Unknown on the map: show what the API says.
+        selectedLocation = ApiLabels.translate(
+          S.of(context),
+          data['location_type'],
+        );
+        selectedLocationType = ApiLabels.translate(
+          S.of(context),
+          data['location_name'],
+        );
+      }
+      _applyApiDetails(slot, data);
+
+      // The slot loaded for this booking is the already-confirmed one.
+      if (initialConfirmedSlot.isEmpty) initialConfirmedSlot = number;
+
+      if (slot != null && data.containsKey('is_booked')) {
+        bookedSlots = data['is_booked'] == true
+            ? {...bookedSlots, slot.id}
+            : ({...bookedSlots}..remove(slot.id));
+      }
+      if (slot != null && data.containsKey('shaded_slot')) {
+        shadedSlots = data['shaded_slot'] == true
+            ? {...shadedSlots, slot.id}
+            : ({...shadedSlots}..remove(slot.id));
+      }
+    });
+    if (slot != null) _centerOn(slot);
+  }
+
+  bool _isSameAsConfirmed() =>
+      initialConfirmedSlot.isNotEmpty &&
+      selectedSlotNumber == initialConfirmedSlot;
+
+  void _onSlotSelected(MapSlot slot) {
+    if (bookedSlots.contains(slot.id)) {
+      _showCustomSnackBar(S.of(context).slotAlreadyBooked, isError: true);
+      return;
+    }
+    setState(() {
+      selectedSlotCode = slot.id;
+      selectedSlotNumber = slot.backendName;
+      selectedLocationCode = slot.displayCode;
+      selectedLocation = _locationName(slot);
+      selectedLocationType = _locationType(slot);
       // Local fallback until the dynamic size arrives from slot_details.
-      selectedSlotSize = _getSlotSize(codeString.split('-').first);
+      selectedSlotSize = _fallbackSize(slot);
     });
     _saveSelectedSlot();
-    _fetchSlotSize(codeString, formattedSlot);
+    _fetchSlotSize(slot);
   }
 
   /// Fetches the dynamic `slot_size` for the tapped slot from
   /// `/api/parking/slot_details` and replaces the local fallback size.
-  Future<void> _fetchSlotSize(String codeString, String slotNumber) async {
+  Future<void> _fetchSlotSize(MapSlot slot) async {
     try {
-      final token = GetStorage().read('token');
       final response = await BaseClient.dio.post(
         ApiConstants.slotDetails,
-        data: {'slot_number': slotNumber},
+        data: {'slot_number': slot.backendName},
         options: Options(
-          headers: {
-            if (token != null) 'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-          },
+          headers: _headers(),
           contentType: Headers.formUrlEncodedContentType,
         ),
       );
-      debugPrint('--- API RESPONSE (slot_details / size) ---');
-      debugPrint('Response Data: ${response.data}');
-
       if (response.statusCode != 200 ||
           response.data == null ||
           response.data['status'] != true) {
         return;
       }
       final data = response.data['data'];
-      final size = data is Map ? SlotSizeUtils.read(data) : '';
+      if (data is! Map) return;
       // Ignore stale responses if the user tapped another slot meanwhile.
-      if (!mounted || size.isEmpty || selectedSlotCode != codeString) return;
-      setState(() => selectedSlotSize = size);
+      if (!mounted || selectedSlotCode != slot.id) return;
+      setState(() => _applyApiDetails(slot, data));
       _saveSelectedSlot();
     } catch (e) {
       debugPrint('Error fetching slot size: $e');
     }
   }
 
-  /// Maps a backend slot name such as "A01 - JETSKI" to the internal map
-  /// code (e.g. "JTSP1_S1-01"). The display name does not say which map
-  /// section the slot is in, so a slot this device confirmed earlier is
-  /// preferred; otherwise numbers above section 1's 17 slots go to section 2.
-  String _resolveMapCode(String slotNumber) {
-    final candidates = <String>[
-      ...((GetStorage().read('user_confirmed_parking_slots') as List?) ?? [])
-          .map((e) => e.toString()),
-    ];
-    for (final code in candidates) {
-      final parts = code.split('-');
-      final index = int.tryParse(parts.last);
-      if (parts.length == 2 &&
-          index != null &&
-          _formatSlotCode(parts.first, index) == slotNumber) {
-        return code;
-      }
-    }
-    final match = RegExp(r'^\s*([A-E])(\d+)\s*-').firstMatch(slotNumber);
-    if (match == null) return "";
-    const rowPrefixes = {
-      'A': 'JTSP1',
-      'B': 'JTSP2',
-      'C': 'FTP17',
-      'D': 'FTP13A',
-      'E': 'FTP13B',
-    };
-    final index = int.parse(match.group(2)!);
-    final row = _slotRows.firstWhere(
-      (r) => r.prefix == rowPrefixes[match.group(1)],
-    );
-    final section = index <= row.sec1Count ? 'S1' : 'S2';
-    if (index < 1 || index > row.sec2Count) return "";
-    return "${row.prefix}_$section-${index.toString().padLeft(2, '0')}";
-  }
-
-  String _formatSlotCode(String prefix, int index) {
-    // Strip section identifiers _S1 and _S2
-    String cleanPrefix = prefix.replaceAll('_S1', '').replaceAll('_S2', '');
-    String formattedPrefix = cleanPrefix;
-    String locationName = "";
-
-    switch (cleanPrefix) {
-      case 'JTSP1':
-        formattedPrefix = "A";
-        locationName = "JETSKI";
-        break;
-      case 'JTSP2':
-        formattedPrefix = "B";
-        locationName = "JETSKI";
-        break;
-      case 'FTP17':
-        formattedPrefix = "C";
-        locationName = "FOOD TRUCK";
-        break;
-      case 'FTP13A':
-        formattedPrefix = "D";
-        locationName = "FOOD TRUCK";
-        break;
-      case 'FTP13B':
-        formattedPrefix = "E";
-        locationName = "FOOD TRUCK";
-        break;
-      case 'JTSP':
-        formattedPrefix = "A";
-        locationName = "JETSKI";
-        break;
-      case 'FTP':
-        formattedPrefix = "B";
-        locationName = "FOOD TRUCK";
-        break;
-      case 'BTP':
-        formattedPrefix = "C";
-        locationName = "BOATS";
-        break;
-      case 'CTP':
-        formattedPrefix = "D";
-        locationName = "CARAVAN";
-        break;
-    }
-
-    return '$formattedPrefix${index.toString().padLeft(2, '0')} - $locationName';
-  }
-
   Future<void> _continueToBooking() async {
     if (selectedSlotCode.isEmpty || selectedSlotNumber.isEmpty) {
-      _showCustomSnackBar(
-        S.of(context).errorConfirmingLocation,
-        isError: true,
-      );
+      _showCustomSnackBar(S.of(context).errorConfirmingLocation, isError: true);
       return;
     }
-
     _saveSelectedSlot();
 
     if (Get.isRegistered<BookParkingController>()) {
@@ -787,75 +486,200 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // Localised slot info
+  // ---------------------------------------------------------------------------
+
+  /// Applies a `/parking/slot_details` response. In that API
+  /// `location_name` is the shade area ("Shaded" / "Non-Shaded"),
+  /// `location_type` is the slot type and `location_code` a location id.
+  /// Call inside setState.
+  void _applyApiDetails(MapSlot? slot, Map data) {
+    final size = SlotSizeUtils.read(data);
+    if (size.isNotEmpty) selectedSlotSize = size;
+    final area = data['location_name'];
+    if (slot == null || area == null || area == false) return;
+    final shaded = !RegExp(
+      r'non|un',
+      caseSensitive: false,
+    ).hasMatch(area.toString());
+    shadedSlots = shaded
+        ? {...shadedSlots, slot.id}
+        : ({...shadedSlots}..remove(slot.id));
+    selectedLocationType = _locationType(slot);
+  }
+
+  String _locationName(MapSlot slot) {
+    final s = S.of(context);
+    switch (slot.group.key) {
+      case 'JET':
+        return s.jetskiWithTrailerParking;
+      case 'FT17':
+      case 'FT13':
+        return s.foodTruckParking;
+      case 'BOA':
+      case 'BOB':
+        return s.boatsParking;
+      case 'CAA':
+      case 'CAB':
+        return s.caravanParking;
+      default:
+        return s.areaSuffix(slot.group.locationCode);
+    }
+  }
+
+  String _locationType(MapSlot slot) => shadedSlots.contains(slot.id)
+      ? S.of(context).shaded
+      : S.of(context).unshaded;
+
+  String _fallbackSize(MapSlot slot) => slot.group.fallbackSize;
+
+  /// Translates the English text painted on the map.
+  String _translateMapLabel(String text) {
+    final s = S.of(context);
+    final shaded = RegExp(
+      r'^(BOATS|CARAVAN) PARKING - ([AB]) \(SHADED\)$',
+    ).firstMatch(text);
+    if (shaded != null) {
+      return shaded.group(1) == 'BOATS'
+          ? s.mapBoatsParkingShaded(shaded.group(2)!)
+          : s.mapCaravanParkingShaded(shaded.group(2)!);
+    }
+    final plain = RegExp(
+      r'^(BOATS|CARAVAN) PARKING - ([AB])$',
+    ).firstMatch(text);
+    if (plain != null) {
+      return plain.group(1) == 'BOATS'
+          ? s.mapBoatsParking(plain.group(2)!)
+          : s.mapCaravanParking(plain.group(2)!);
+    }
+    final food = RegExp(r'Length (\d+)m$').firstMatch(text);
+    if (food != null) return s.mapFoodTruckParkingLength(food.group(1)!);
+    switch (text) {
+      case 'JETSKI WITH TRAILER PARKING':
+        return s.mapJetskiTrailerParking;
+      case 'EXIT':
+        return s.mapExit;
+      case 'ENTRANCE':
+        return s.mapEntrance;
+    }
+    return text;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Map viewport
+  // ---------------------------------------------------------------------------
+
+  double _fitScale(Size viewport) => viewport.height / ParkingMapLayout.height;
+
+  /// Called after every layout. The map always shows its full height (as in
+  /// the design), so when the viewport changes size — e.g. the info rows
+  /// appear after a tap — it is re-fitted, keeping the same left edge.
+  void _setInitialTransform(Size viewport) {
+    if (_viewport == viewport) return;
+    // Ignore the zero-size frames seen during route transitions; fitting to
+    // them would lose the scroll position (scale 0 → NaN).
+    if (viewport.width <= 0 || viewport.height <= 0) return;
+    final first = _viewport == null;
+    _viewport = viewport;
+    final m = _transformationController.value;
+    final scale = m.getMaxScaleOnAxis();
+    double left = first || scale <= 0
+        ? _designScrollX
+        : -m.getTranslation().x / scale;
+    if (!left.isFinite) left = _designScrollX;
+    _showFrom(left);
+    final selected = _map.byId(selectedSlotCode);
+    if (first && selected != null && widget.isDirectionMode) {
+      _centerOn(selected);
+    }
+  }
+
+  /// Fits the map to the viewport height and shows it from map x = [left].
+  void _showFrom(double left) {
+    final viewport = _viewport;
+    if (viewport == null) return;
+    final scale = _fitScale(viewport);
+    final maxX = math.max(0.0, ParkingMapLayout.width * scale - viewport.width);
+    final x = (left * scale).clamp(0.0, maxX);
+    _transformationController.value = Matrix4.identity()
+      ..translateByDouble(-x, 0, 0, 1)
+      ..scaleByDouble(scale, scale, 1, 1);
+  }
+
+  void _centerOn(MapSlot slot) {
+    final viewport = _viewport;
+    if (viewport == null) return;
+    final scale = _fitScale(viewport);
+    _showFrom(slot.center.dx - viewport.width / 2 / scale);
+  }
+
+  /// Scale from the 430-wide XD artboard to this screen's width.
+  double get _k =>
+      (MediaQuery.sizeOf(context).width / 430).clamp(0.8, 1.25).toDouble();
+
+  /// Design pixels → logical pixels on this device.
+  double _d(double v) => v * _k;
+
+  /// API sizes come as length x width ("17m x 5m"); the design shows the
+  /// short side first ("5m x 17m").
+  String _designSize(String raw) {
+    final m = RegExp(r'([\d.]+)\s*(?:m|م)?\s*[xX×]\s*([\d.]+)').firstMatch(raw);
+    if (m == null) return raw;
+    final a = double.parse(m.group(1)!), b = double.parse(m.group(2)!);
+    String fmt(double v) =>
+        v == v.roundToDouble() ? v.toInt().toString() : v.toString();
+    final w = fmt(math.min(a, b)), l = fmt(math.max(a, b));
+    // Left-to-right isolate so Arabic layout keeps "5م x 17م" in order.
+    const lri = '\u{2066}', pdi = '\u{2069}';
+    return '$lri${S.of(context).sizeFormat(w, l)}$pdi';
+  }
+
+  // ---------------------------------------------------------------------------
+  // UI
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFEFEF),
+      backgroundColor: _Design.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE30613),
-        title: Text(
-          widget.isDirectionMode
-              ? S.of(context).vehicleDirection
-              : S.of(context).selectParkingLocation,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        centerTitle: false,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.white,
-            size: 19,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        backgroundColor: _Design.red,
+        surfaceTintColor: _Design.red,
+        toolbarHeight: _d(_Design.headerHeight),
         elevation: 0,
+        automaticallyImplyLeading: false,
+        leadingWidth: _d(72),
+        titleSpacing: _d(6),
+        leading: InkResponse(
+          onTap: () => Navigator.of(context).pop(),
+          radius: 28,
+          child: Padding(
+            padding: EdgeInsetsDirectional.only(start: _d(33)),
+            child: Center(child: _BackChevron(scale: _k)),
+          ),
+        ),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            widget.isDirectionMode
+                ? S.of(context).vehicleDirection
+                : S.of(context).selectParkingLocation,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: _d(25),
+            ),
+          ),
+        ),
       ),
       body: Stack(
         children: [
           Column(
             children: [
               _buildInstructions(),
-              Expanded(
-                child: Container(
-                  color: const Color(0xFF1E1E1E), // Dark map background
-                  child: InteractiveViewer(
-                    transformationController: _transformationController,
-                    minScale: 0.1,
-                    maxScale: 6.0,
-                    boundaryMargin: const EdgeInsets.all(double.infinity),
-                    constrained: false,
-                    child: GestureDetector(
-                      onTapDown: (details) =>
-                          _handleCanvasTap(details.localPosition),
-                      child: Container(
-                        width: canvasWidth,
-                        height: canvasHeight,
-                        color: const Color(0xFF242424),
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: CustomPaint(
-                                painter: _CompleteMapPainter(
-                                  selectedCode: selectedSlotCode,
-                                  slotRows: _slotRows,
-                                  bookedSlots: bookedSlots,
-                                  shadedSlots: shadedSlots,
-                                  labels: _MapLabels.of(context),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
+              Expanded(child: _buildMap()),
               _buildFooterPanel(),
             ],
           ),
@@ -863,7 +687,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
             Container(
               color: Colors.black12,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFFE30613)),
+                child: CircularProgressIndicator(color: _Design.red),
               ),
             ),
         ],
@@ -871,237 +695,229 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     );
   }
 
-  void _handleCanvasTap(Offset position) {
-    if (widget.isDirectionMode) return;
-    final double px = position.dx;
-    final double py = position.dy;
-    final double skewFactor = -0.7;
-
-    for (final row in _slotRows) {
-      if (py >= row.top && py <= row.top + row.slotH) {
-        // Section 1: 17 slots
-        for (int i = 0; i < row.sec1Count; i++) {
-          final double skewOffset = skewFactor * (row.top + row.slotH - py);
-          final double x = row.sec1StartX + (i * row.slotW) + skewOffset;
-          if (px >= x && px <= x + row.slotW) {
-            final codeString =
-                "${row.prefix}_S1-${(i + 1).toString().padLeft(2, '0')}";
-            _onSlotSelected(codeString, _formatSlotCode(row.prefix, i + 1));
-            return;
-          }
-        }
-        // Section 2: 47 slots
-        for (int i = 0; i < row.sec2Count; i++) {
-          final double skewOffset = skewFactor * (row.top + row.slotH - py);
-          final double x = row.sec2StartX + (i * row.slotW) + skewOffset;
-          if (px >= x && px <= x + row.slotW) {
-            final codeString =
-                "${row.prefix}_S2-${(i + 1).toString().padLeft(2, '0')}";
-            _onSlotSelected(codeString, _formatSlotCode(row.prefix, i + 1));
-            return;
-          }
-        }
-      }
-    }
-  }
-
-  /// Map codes carry a section suffix ("JTSP1_S1"); the lookups below are
-  /// keyed by row prefix only ("JTSP1").
-  String _rowPrefix(String prefix) => prefix.replaceAll(RegExp(r'_S[12]$'), '');
-
-  String _getFriendlyLocation(String prefix) {
-    switch (_rowPrefix(prefix)) {
-      case 'JTSP1':
-      case 'JTSP2':
-        return S.of(context).jetskiWithTrailerParking;
-      case 'FTP17':
-        return S.of(context).foodTruckParking17m;
-      case 'FTP13A':
-      case 'FTP13B':
-        return S.of(context).foodTruckParking13m;
-      case 'JTSP':
-        return S.of(context).jetskiParking;
-      case 'FTP':
-        return S.of(context).foodTruckParking;
-      case 'BTP':
-        return S.of(context).boatsParking;
-      case 'CTP':
-        return S.of(context).caravanParking;
-      default:
-        return S.of(context).areaSuffix(prefix);
-    }
-  }
-
-  String _getLocationType(String prefix, [String? code]) {
-    prefix = _rowPrefix(prefix);
-    if (code != null && shadedSlots.contains(code)) return S.of(context).shaded;
-    if (prefix == 'BTP' || prefix == 'CTP') return S.of(context).shaded;
-    if (prefix.contains('FTP')) return S.of(context).open;
-    return S.of(context).open;
-  }
-
-  String _getSlotSize(String prefix) {
-    switch (_rowPrefix(prefix)) {
-      case 'JTSP1':
-      case 'JTSP2':
-        return S.of(context).sizeFormat("4", "10");
-      case 'FTP17':
-        return S.of(context).sizeFormat("5", "17");
-      case 'FTP13A':
-      case 'FTP13B':
-        return S.of(context).sizeFormat("5", "13");
-      case 'JTSP':
-        return S.of(context).sizeFormat("4", "10");
-      case 'FTP':
-        return S.of(context).sizeFormat("5", "17");
-      case 'BTP':
-        return S.of(context).sizeFormat("5", "15");
-      case 'CTP':
-        return S.of(context).sizeFormat("5", "16");
-      default:
-        return S.of(context).standard;
-    }
-  }
-
   Widget _buildInstructions() {
-    return Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Text(
-        S.of(context).navigateSelectSlot,
-        style: const TextStyle(color: Colors.black87, fontSize: 12.5),
+    return Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(_d(44), _d(5), _d(40), _d(7)),
+      child: SizedBox(
+        width: double.infinity,
+        child: Text(
+          S.of(context).navigateSelectSlot,
+          style: TextStyle(color: Colors.black, fontSize: _d(16), height: 1.3),
+        ),
       ),
+    );
+  }
+
+  Widget _buildMap() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final viewport = constraints.biggest;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _setInitialTransform(viewport);
+        });
+        final fit = _fitScale(viewport);
+        return ClipRect(
+          child: Container(
+            color: ParkingMapColors.ground,
+            child: InteractiveViewer(
+              transformationController: _transformationController,
+              constrained: false,
+              minScale: fit,
+              maxScale: fit * 4,
+              boundaryMargin: EdgeInsets.zero,
+              child: GestureDetector(
+                onTapUp: widget.isDirectionMode
+                    ? null
+                    : (details) {
+                        final slot = _map.hitTest(details.localPosition);
+                        if (slot != null) _onSlotSelected(slot);
+                      },
+                child: CustomPaint(
+                  size: const Size(
+                    ParkingMapLayout.width,
+                    ParkingMapLayout.height,
+                  ),
+                  painter: ParkingMapPainter(
+                    selectedId: selectedSlotCode,
+                    bookedIds: bookedSlots,
+                    shadedIds: shadedSlots,
+                    translateLabel: _translateMapLabel,
+                    textDirection: Directionality.of(context),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildFooterPanel() {
-    return Container(
-      color: const Color(0xFFF2F2F2),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildLegendRow(),
-          if (widget.isDirectionMode && noActiveBooking) ...[
-            const SizedBox(height: 18),
-            Text(
-              S.of(context).noActiveBooking,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: Colors.black87,
-              ),
-            ),
-          ],
-          if (widget.isDirectionMode && lookupVehicle != null) ...[
-            const SizedBox(height: 18),
-            _buildInfoRow(
-              '${S.of(context).vehicle} : ',
-              "${lookupVehicle!['license_number'] ?? ''} • ${lookupVehicle!['vehicle_type_name'] ?? lookupVehicle!['model'] ?? ''}",
-            ),
-          ],
-          if (selectedSlotCode.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            _buildInfoRow(
-              S.of(context).locationCodeLabel,
-              selectedLocationCode,
-            ),
-            _buildInfoRow(S.of(context).slotNumberLabel, selectedSlotNumber),
-            _buildInfoRow(S.of(context).locationLabel, selectedLocation),
-            _buildInfoRow(
-              S.of(context).locationTypeLabel,
-              selectedLocationType,
-            ),
-            _buildInfoRow(
-              S.of(context).sizeLabel,
-              SlotSizeUtils.format(selectedSlotSize),
-            ),
-          ],
-
-          const SizedBox(height: 14),
-          if (!widget.isDirectionMode)
+    final s = S.of(context);
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(top: _d(14), bottom: _d(24)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildLegendRow(),
             Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE30613),
-                  minimumSize: const Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  elevation: 0,
-                ),
-                onPressed: (selectedSlotCode.isEmpty || _isSameAsConfirmed())
-                    ? null
-                    : _continueToBooking,
-                child: Text(
-                  _isSameAsConfirmed()
-                      ? S.of(context).locationConfirmedSuccessfully
-                      : S.of(context).next,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.5,
-                  ),
-                ),
+              padding: EdgeInsetsDirectional.fromSTEB(
+                _d(19),
+                _d(24),
+                _d(16),
+                0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.isDirectionMode && noActiveBooking)
+                    Text(
+                      s.noActiveBooking,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: _d(16),
+                        color: Colors.black,
+                      ),
+                    ),
+                  if (widget.isDirectionMode && lookupVehicle != null)
+                    _buildInfoRow(
+                      '${s.vehicle} :',
+                      "${lookupVehicle!['license_number'] ?? ''} • ${lookupVehicle!['vehicle_type_name'] ?? lookupVehicle!['model'] ?? ''}",
+                    ),
+                  if (selectedSlotCode.isNotEmpty) ...[
+                    _buildInfoRow(
+                      s.locationCodeLabel.trim(),
+                      selectedLocationCode,
+                    ),
+                    _buildInfoRow(s.locationLabel.trim(), selectedLocation),
+                    _buildInfoRow(
+                      s.locationTypeLabel.trim(),
+                      selectedLocationType,
+                    ),
+                    _buildInfoRow(
+                      s.sizeShortLabel,
+                      _designSize(selectedSlotSize),
+                    ),
+                  ],
+                ],
               ),
             ),
-        ],
+            if (!widget.isDirectionMode) ...[
+              SizedBox(height: _d(12)),
+              Center(child: _buildConfirmButton()),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton() {
+    final confirmed = _isSameAsConfirmed();
+    return SizedBox(
+      width: _d(318),
+      height: _d(49),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _Design.red,
+          disabledBackgroundColor: _Design.red.withValues(alpha: 0.5),
+          foregroundColor: Colors.white,
+          disabledForegroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(_d(16)),
+          ),
+        ),
+        // Like the design, the button always looks active; with no slot
+        // chosen, _continueToBooking explains what is missing.
+        onPressed: confirmed ? null : _continueToBooking,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            confirmed
+                ? S.of(context).locationConfirmedSuccessfully
+                : S.of(context).confirmLocation,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: _d(20)),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildLegendRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildLegendItem(const Color(0xFF000000), S.of(context).available),
-        _buildLegendItem(const Color(0xFFCDCDCD), S.of(context).booked),
-        _buildLegendItem(const Color(0xFFE30613), S.of(context).selected),
-        _buildLegendItem(
-          const Color.fromARGB(255, 165, 164, 164),
-          S.of(context).shaded,
-        ),
-      ],
+    final s = S.of(context);
+    // Square x positions in the design: 17, 126, 225, 333 (430 wide).
+    return Padding(
+      padding: EdgeInsetsDirectional.only(start: _d(17)),
+      child: Row(
+        children: [
+          _buildLegendItem(ParkingMapColors.available, s.available, 109),
+          _buildLegendItem(ParkingMapColors.booked, s.booked, 99),
+          _buildLegendItem(ParkingMapColors.selected, s.selected, 108),
+          Expanded(
+            child: _buildLegendItem(ParkingMapColors.shaded, s.shaded, null),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildLegendItem(Color color, String label) {
-    return Row(
+  Widget _buildLegendItem(Color color, String label, double? width) {
+    final item = Row(
       children: [
-        Container(width: 14, height: 14, color: color),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: Colors.black87),
+        Container(
+          width: _d(21),
+          height: _d(22),
+          decoration: BoxDecoration(
+            color: color,
+            border: Border.all(color: Colors.white),
+          ),
         ),
+        SizedBox(width: _d(8)),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: _d(15), color: Colors.black),
+            ),
+          ),
+        ),
+        SizedBox(width: _d(6)),
       ],
     );
+    return width == null ? item : SizedBox(width: _d(width), child: item);
   }
 
   Widget _buildInfoRow(String label, String value) {
     if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.5),
+    return SizedBox(
+      height: _d(20.7),
       child: Row(
         children: [
           SizedBox(
-            width: 110,
+            width: _d(120),
             child: Text(
               label,
-              style: const TextStyle(color: Colors.black, fontSize: 12.5),
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.black, fontSize: _d(15)),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 12.5,
+                fontSize: _d(15),
                 color: Colors.black,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
@@ -1114,9 +930,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: isError
-            ? const Color(0xFFE30613)
-            : const Color(0xFF2ECC71),
+        backgroundColor: isError ? _Design.red : const Color(0xFF2ECC71),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1134,453 +948,40 @@ class _SelectParkingViewState extends State<SelectParkingView> {
   }
 }
 
-class _CompleteMapPainter extends CustomPainter {
-  final String selectedCode;
-  final List<_SlotRowConfig> slotRows;
-  final List<String> bookedSlots;
-  final List<String> shadedSlots;
-  final _MapLabels labels;
+/// The thick white "<" back chevron from the design (stroke 4).
+class _BackChevron extends StatelessWidget {
+  final double scale;
+  const _BackChevron({this.scale = 1});
 
-  _CompleteMapPainter({
-    required this.selectedCode,
-    required this.slotRows,
-    required this.bookedSlots,
-    required this.shadedSlots,
-    required this.labels,
-  });
+  @override
+  Widget build(BuildContext context) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Transform.flip(
+      flipX: rtl,
+      child: CustomPaint(
+        size: Size(16 * scale, 27 * scale),
+        painter: _ChevronPainter(),
+      ),
+    );
+  }
+}
 
+class _ChevronPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final roadPaint = Paint()
-      ..color = const Color(0xFF1E1E1E)
-      ..style = PaintingStyle.fill;
-    final curvePaint = Paint()
-      ..color = const Color(0xFF2B2B2B)
-      ..style = PaintingStyle.fill;
-    final linePaint = Paint()
-      ..color = Colors.white12
+    final paint = Paint()
+      ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    int targetRowIndex = -1;
-    bool isTargetSection2 = false;
-    if (selectedCode.isNotEmpty) {
-      for (int i = 0; i < slotRows.length; i++) {
-        if (selectedCode.startsWith(slotRows[i].prefix)) {
-          targetRowIndex = i;
-          isTargetSection2 = selectedCode.contains("_S2-");
-          break;
-        }
-      }
-    }
-
-    // --- 1. DRAW CONTINUOUS CONNECTING TRACKS ---
-    _drawContinuousRoadTrack(
-      canvas,
-      90,
-      180,
-      size.width,
-      roadPaint,
-      curvePaint,
-      linePaint,
-      label: labels.jetskiTrailer,
-      sec2Label: labels.boatsA,
-      sec2ShadedLabel: labels.boatsAShaded,
-    );
-    _drawContinuousRoadTrack(
-      canvas,
-      220,
-      340,
-      size.width,
-      roadPaint,
-      curvePaint,
-      linePaint,
-      label: labels.jetskiTrailer,
-      sec2Label: labels.boatsB,
-      sec2ShadedLabel: labels.boatsBShaded,
-    );
-    _drawContinuousRoadTrack(
-      canvas,
-      380,
-      500,
-      size.width,
-      roadPaint,
-      curvePaint,
-      linePaint,
-      label: labels.foodTruck17,
-      sec2Label: labels.boatsB,
-      sec2ShadedLabel: labels.caravanBShaded,
-    );
-    _drawContinuousRoadTrack(
-      canvas,
-      540,
-      660,
-      size.width,
-      roadPaint,
-      curvePaint,
-      linePaint,
-      label: labels.foodTruck13,
-      sec2Label: labels.caravanB,
-      sec2ShadedLabel: labels.caravanBShaded,
-    );
-    _drawContinuousRoadTrack(
-      canvas,
-      700,
-      820,
-      size.width,
-      roadPaint,
-      curvePaint,
-      linePaint,
-      label: labels.foodTruck13,
-      sec2Label: labels.caravanB,
-      sec2ShadedLabel: labels.caravanAShaded,
-    );
-
-    // --- 2. DRAW VERTICAL ENTRANCE/EXIT ROADWAY ---
-    _drawVerticalRoadway(
-      canvas,
-      x: 1000,
-      width: 140,
-      height: 820,
-      roadPaint: roadPaint,
-      linePaint: linePaint,
-      targetRowIndex: targetRowIndex,
-      isTargetSection2: isTargetSection2,
-    );
-
-    // --- 3. DRAW SLOTTED OVERLAPPING BLOCKS MESH ---
-    for (final row in slotRows) {
-      // Section 1: 17 slots
-      _drawSlantedSlotsRow(
-        canvas,
-        top: row.top,
-        startX: row.sec1StartX,
-        count: row.sec1Count,
-        slotW: row.slotW,
-        slotH: row.slotH,
-        prefix: "${row.prefix}_S1",
-      );
-      // Section 2: 47 slots
-      _drawSlantedSlotsRow(
-        canvas,
-        top: row.top,
-        startX: row.sec2StartX,
-        count: row.sec2Count,
-        slotW: row.slotW,
-        slotH: row.slotH,
-        prefix: "${row.prefix}_S2",
-      );
-    }
-  }
-
-  void _drawContinuousRoadTrack(
-    Canvas canvas,
-    double top,
-    double bottom,
-    double width,
-    Paint fill,
-    Paint loopFill,
-    Paint line, {
-    required String label,
-    String? sec2Label,
-    String? sec2ShadedLabel,
-  }) {
-    final trackH = bottom - top;
-    final ribbonPath = Path();
-    ribbonPath.moveTo(200, top);
-    ribbonPath.lineTo(width - 200, top);
-    ribbonPath.quadraticBezierTo(
-      width - 40,
-      top + trackH / 2,
-      width - 200,
-      bottom,
-    );
-    ribbonPath.lineTo(200, bottom);
-    ribbonPath.quadraticBezierTo(40, top + trackH / 2, 200, top);
-    ribbonPath.close();
-
-    canvas.drawPath(ribbonPath, loopFill);
-    canvas.drawPath(ribbonPath, line);
-
-    // Label under Section 1
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: label,
-        style: const TextStyle(
-          color: Colors.white38,
-          fontSize: 8.5,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.2,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(canvas, Offset(250, bottom + 10));
-
-    // Label under Section 2 (after the road)
-    if (sec2Label != null) {
-      final textPainter2 = TextPainter(
-        text: TextSpan(
-          text: sec2Label,
-          style: const TextStyle(
-            color: Colors.white38,
-            fontSize: 8.5,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.2,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter2.layout();
-      textPainter2.paint(canvas, Offset(1300, bottom + 10));
-    }
-
-    // Label under Section 2 Shaded area (at the far end)
-    if (sec2ShadedLabel != null) {
-      final textPainter3 = TextPainter(
-        text: TextSpan(
-          text: sec2ShadedLabel,
-          style: const TextStyle(
-            color: Colors.white38,
-            fontSize: 8.5,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.2,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter3.layout();
-      textPainter3.paint(canvas, Offset(2600, bottom + 10));
-    }
-  }
-
-  void _drawVerticalRoadway(
-    Canvas canvas, {
-    required double x,
-    required double width,
-    required double height,
-    required Paint roadPaint,
-    required Paint linePaint,
-    int targetRowIndex = -1,
-    bool isTargetSection2 = false,
-  }) {
-    final rect = Rect.fromLTWH(x, 80, width, height);
-    canvas.drawRect(rect, roadPaint);
-    canvas.drawRect(rect, linePaint);
-
-    final double midX = x + width / 2;
-    final dashPaint = Paint()
-      ..color = Colors.white38
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // Draw Dashed Line in middle
-    double currentY = 80;
-    while (currentY < 80 + height) {
-      canvas.drawLine(
-        Offset(midX, currentY),
-        Offset(midX, math.min(currentY + 15, 80 + height)),
-        dashPaint,
-      );
-      currentY += 25;
-    }
-
-    // Lane Labels: EXIT & ENTRANCE
-    _drawVerticalLabel(
-      canvas,
-      labels.exit,
-      Offset(x + width * 0.30, 80 + height - 20),
-    );
-    _drawVerticalLabel(
-      canvas,
-      labels.entrance,
-      Offset(x + width * 0.70, 65 + height - 20),
-    );
-
-    // Direction Path (from ENTRANCE lane up to target row)
-    if (targetRowIndex != -1) {
-      final targetRow = slotRows[targetRowIndex];
-      final targetY = targetRow.top + targetRow.slotH / 2;
-      final entranceX = x + width * 0.70;
-      final entryY = 65 + height - 20;
-
-      final pathPaint = Paint()
-        ..color =
-            Color(0xFF00FF00) // Highlight Color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-
-      // Vertical line up the entrance lane
-      double yNav = entryY - 10;
-      while (yNav > targetY) {
-        canvas.drawCircle(Offset(entranceX, yNav), 1.0, pathPaint);
-        yNav -= 6;
-      }
-    }
-
-    // Optional: Draw curved dashed lines matching the design
-    for (int i = 0; i < slotRows.length; i++) {
-      final row = slotRows[i];
-      _drawConnectionCurve(
-        canvas,
-        row.top + row.slotH / 2,
-        x,
-        width,
-        dashPaint,
-        highlightLeft: targetRowIndex == i && !isTargetSection2,
-        highlightRight: targetRowIndex == i && isTargetSection2,
-      );
-    }
-  }
-
-  void _drawConnectionCurve(
-    Canvas canvas,
-    double y,
-    double roadX,
-    double roadWidth,
-    Paint paint, {
-    bool highlightLeft = false,
-    bool highlightRight = false,
-  }) {
-    final highlightPaint = Paint()
-      ..color =
-          Color(0xFF00FF00) // Highlight color
-      ..style = PaintingStyle.fill;
-
-    // Left side (Section 1)
-    for (var i = 0; i < 4; i++) {
-      canvas.drawCircle(
-        Offset(roadX - 15 + i * 4, y),
-        highlightLeft ? 1.5 : 0.8,
-        highlightLeft ? highlightPaint : paint,
-      );
-    }
-    // Right side (Section 2)
-    for (var i = 0; i < 4; i++) {
-      canvas.drawCircle(
-        Offset(roadX + roadWidth + 5 + i * 4, y),
-        highlightRight ? 1.5 : 0.8,
-        highlightRight ? highlightPaint : paint,
-      );
-    }
-  }
-
-  void _drawVerticalLabel(Canvas canvas, String text, Offset offset) {
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.0,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
-    canvas.rotate(-math.pi / 2);
-    textPainter.paint(
-      canvas,
-      Offset(-textPainter.width / 2, -textPainter.height / 2),
-    );
-    canvas.restore();
-  }
-
-  void _drawSlantedSlotsRow(
-    Canvas canvas, {
-    required double top,
-    required double startX,
-    required int count,
-    required double slotW,
-    required double slotH,
-    required String prefix,
-  }) {
-    final availablePaint = Paint()
-      ..color = const Color(0xFF000000)
-      ..style = PaintingStyle.fill;
-    final bookedPaint = Paint()
-      ..color = const Color(0xFFCDCDCD)
-      ..style = PaintingStyle.fill;
-    final selectedPaint = Paint()
-      ..color = const Color(0xFFE30613)
-      ..style = PaintingStyle.fill;
-    final shadedPaint = Paint()
-      ..color = const Color.fromARGB(255, 165, 164, 164)
-      ..style = PaintingStyle.fill;
-    final strokePaint = Paint()
-      ..color = Colors.white24
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-
-    final double skewFactor = -0.7;
-
-    for (int i = 0; i < count; i++) {
-      final codeString = "$prefix-${(i + 1).toString().padLeft(2, '0')}";
-      final isBooked = bookedSlots.contains(codeString);
-      final isSelected = codeString == selectedCode;
-      final isShaded = shadedSlots.contains(codeString);
-
-      Paint cellPaint = availablePaint;
-      if (isShaded) cellPaint = shadedPaint;
-      if (isBooked) cellPaint = bookedPaint;
-      final double x = startX + (i * slotW);
-      final double y = top;
-
-      if (isSelected) {
-        cellPaint = selectedPaint;
-        // Draw a small checkmark in the center of the selected slot
-        final double centerX = x + slotW / 2;
-        final double centerY = y + slotH / 2;
-        final checkPaint = Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0;
-        final checkPath = Path();
-        checkPath.moveTo(centerX - 6, centerY);
-        checkPath.lineTo(centerX - 2, centerY + 4);
-        checkPath.lineTo(centerX + 6, centerY - 6);
-        canvas.drawPath(checkPath, checkPaint);
-      }
-
-      // --- SKIP SLOTS THAT OVERLAP WITH THE VERTICAL ROADWAY ---
-      // No longer needed since we split the sections
-
-      // Draw Slanted Parallelogram
-      final Path slotPath = Path();
-      slotPath.moveTo(x + (skewFactor * slotH), y);
-      slotPath.lineTo(x + slotW + (skewFactor * slotH), y);
-      slotPath.lineTo(x + slotW, y + slotH);
-      slotPath.lineTo(x, y + slotH);
-      slotPath.close();
-
-      canvas.drawPath(slotPath, cellPaint);
-      canvas.drawPath(slotPath, strokePaint);
-
-      // Label
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: (i + 1).toString().padLeft(2, '0'),
-          style: TextStyle(
-            color: isBooked ? Colors.black : Colors.white70,
-            fontSize: 9.2,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(x + slotW / 2 + (skewFactor * slotH / 2) - 5, y + slotH / 2 - 5),
-      );
-    }
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path()
+      ..moveTo(size.width - 2.5, 2.5)
+      ..lineTo(2.5, size.height / 2)
+      ..lineTo(size.width - 2.5, size.height - 2.5);
+    canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

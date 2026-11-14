@@ -351,6 +351,7 @@
   "locationTypeLabel": "نوع الموقع : ",
   "@locationTypeLabel": {},
   "sizeLabel": "حجم الموقف : ",
+  "sizeShortLabel": "الحجم:",
   "@sizeLabel": {},
   "confirmLocation": "تأكيد الموقع",
   "@confirmLocation": {},

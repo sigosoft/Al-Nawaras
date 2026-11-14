@@ -758,6 +758,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "silverTier": MessageLookupByLibrary.simpleMessage("Silver"),
     "sizeFormat": m22,
     "sizeLabel": MessageLookupByLibrary.simpleMessage("Parking Size : "),
+    "sizeShortLabel": MessageLookupByLibrary.simpleMessage("Size:"),
     "skip": MessageLookupByLibrary.simpleMessage("Skip"),
     "slotAlreadyBooked": MessageLookupByLibrary.simpleMessage(
       "This slot is already booked and cannot be selected.",
