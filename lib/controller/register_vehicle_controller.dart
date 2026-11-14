@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
-import '../view/home/home_screen.dart';
+import '../view/home/main_shell.dart';
 
 class RegisterVehicleController extends GetxController {
   final TextEditingController licenseController = TextEditingController();
@@ -211,7 +211,7 @@ class RegisterVehicleController extends GetxController {
           margin: const EdgeInsets.all(15),
           borderRadius: 10,
         );
-        Get.offAll(() => const HomeScreen());
+        Get.offAll(() => const MainShell());
       } else {
         Get.snackbar(
           S.of(Get.context!).error,

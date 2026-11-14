@@ -9,11 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../view/register_vehicle/register_vehicle_screen.dart';
 import '../view/membership_plans/membership_plans_screen.dart';
-import '../view/additional_services/additional_services_screen.dart';
-import '../view/profile/profile_view.dart';
-import '../view/booking/booking_history.dart';
 import '../view/parking/select_parking_view.dart';
-import '../view/home/home_screen.dart';
+import '../view/home/main_shell.dart';
 import 'package:al_nawaras/view/rewards/rewards_view.dart';
 import '../../generated/l10n.dart';
 import '../view/home/my_vehicles_view.dart';
@@ -752,19 +749,17 @@ class HomeController extends GetxController {
   }
 
   void changeBottomNavIndex(int index) {
-    // Always navigate so taps remain responsive even if currentIndex is
-    // out of sync (e.g. after Get.off / deep links that bypass this method).
+    if (!MainShell.isMounted) {
+      // No tab shell yet (unusual): start one on the requested tab.
+      Get.offAll(() => MainShell(initialIndex: index));
+      return;
+    }
+    // The shell is always the root route; drop anything pushed above it so
+    // the switched-to tab is visible, then switch in place (state is kept).
+    Get.until((route) => route.isFirst);
+    if (currentIndex == index) return;
     currentIndex = index;
     update();
-    if (index == 0) {
-      Get.offAll(() => const HomeScreen());
-    } else if (index == 1) {
-      Get.offAll(() => const BookingHistoryView());
-    } else if (index == 2) {
-      Get.offAll(() => const AdditionalServicesScreen());
-    } else if (index == 3) {
-      Get.offAll(() => const ProfileView());
-    }
   }
 
   List<Map<String, dynamic>> searchLocationsResults = [];
@@ -887,7 +882,7 @@ class HomeController extends GetxController {
   }
 
   void onRequestServiceClick() {
-    Get.to(() => const AdditionalServicesScreen());
+    changeBottomNavIndex(2);
   }
 
   void onBuyMembershipClick() {

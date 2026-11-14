@@ -9,7 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../config/api_constants.dart';
 import '../utils/phone_utils.dart';
 import '../view/register/register_screen.dart';
-import '../view/home/home_screen.dart';
+import '../view/home/main_shell.dart';
 import '../view/login/forgot_password_view.dart';
 
 class LoginController extends GetxController {
@@ -147,7 +147,7 @@ class LoginController extends GetxController {
 
           final String loginMessage = data['message'] ?? S.of(Get.context!).loginSuccessful;
 
-          Get.offAll(() => const HomeScreen());
+          Get.offAll(() => const MainShell());
           Get.snackbar(
             S.of(Get.context!).success,
             loginMessage,
@@ -254,7 +254,7 @@ class LoginController extends GetxController {
         final String successMessage = data["message"] ?? S.of(Get.context!).loginSuccessful;
 
         // 🔹 Step 5: Navigate then show snackbar on destination screen
-        Get.offAll(() => const HomeScreen());
+        Get.offAll(() => const MainShell());
         Get.snackbar(
           S.of(Get.context!).success,
           successMessage,

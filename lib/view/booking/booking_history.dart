@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../widgets/booking_card.dart';
 import '../widgets/booking_tab_bar.dart';
 import '../widgets/draggable_help_button.dart';
-import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_no_data.dart';
 import '../../controller/home_controller.dart';
 import '../../generated/l10n.dart';
@@ -26,7 +25,6 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!Get.isRegistered<HomeController>()) return;
       final home = Get.find<HomeController>();
-      home.currentIndex = 1;
       home.fetchParkingHistory(reset: true);
       home.update();
     });
@@ -117,12 +115,6 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
               // Help button
               const DraggableHelpButton(),
             ],
-          ),
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: controller.currentIndex,
-            onTap: (index) {
-              controller.changeBottomNavIndex(index);
-            },
           ),
         );
       },

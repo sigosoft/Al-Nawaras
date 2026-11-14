@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/home_controller.dart';
 import '../../generated/l10n.dart';
-import '../booking/booking_history.dart';
 import '../home/my_vehicles_view.dart';
 
 class MembershipStatusCard extends StatelessWidget {
@@ -96,7 +95,9 @@ class MembershipStatusCard extends StatelessWidget {
                 (bookings?.length ?? 0).toString(),
                 width,
                 onTap: () {
-                  Get.to(() => const BookingHistoryView());
+                  if (Get.isRegistered<HomeController>()) {
+                    Get.find<HomeController>().changeBottomNavIndex(1);
+                  }
                 },
               ),
               _buildStatBox(

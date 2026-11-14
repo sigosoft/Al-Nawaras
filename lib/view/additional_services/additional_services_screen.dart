@@ -4,7 +4,6 @@ import '../../controller/additional_services_controller.dart';
 import '../../controller/home_controller.dart';
 import '../../generated/l10n.dart';
 import '../widgets/custom_app_bar.dart';
-import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/draggable_help_button.dart';
 import '../widgets/custom_no_data.dart';
 
@@ -18,13 +17,6 @@ class AdditionalServicesScreen extends StatelessWidget {
 
     return GetBuilder<AdditionalServicesController>(
       init: AdditionalServicesController(),
-      initState: (state) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final homeController = Get.put(HomeController());
-          homeController.currentIndex = 2;
-          homeController.update();
-        });
-      },
       builder: (controller) {
         return Scaffold(
           backgroundColor: const Color(0xFFF7F7F7),
@@ -89,12 +81,6 @@ class AdditionalServicesScreen extends StatelessWidget {
               ),
               const DraggableHelpButton(),
             ],
-          ),
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: Get.find<HomeController>().currentIndex,
-            onTap: (index) {
-              Get.find<HomeController>().changeBottomNavIndex(index);
-            },
           ),
         );
       },

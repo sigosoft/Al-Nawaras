@@ -1,6 +1,5 @@
 import 'package:al_nawaras/controller/profile_controller.dart';
 import 'package:al_nawaras/controller/about_us_controller.dart';
-import 'package:al_nawaras/view/booking/booking_history.dart';
 import 'package:al_nawaras/view/privacy_policy/privacy_policy.dart';
 import 'package:al_nawaras/view/security/security_view.dart';
 import 'package:al_nawaras/view/help_support/help_support_view.dart';
@@ -14,7 +13,6 @@ import '../widgets/draggable_help_button.dart';
 import '../../controller/home_controller.dart';
 import '../../controller/logout_controller.dart';
 import '../../controller/additional_services_controller.dart';
-import '../widgets/custom_bottom_nav_bar.dart';
 import 'Profile_update_view.dart';
 import '../../controller/welcome_controller.dart';
 
@@ -36,13 +34,6 @@ class ProfileView extends StatelessWidget {
 
     return GetBuilder<HomeController>(
       init: Get.find<HomeController>(),
-      initState: (_) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          final homeController = Get.find<HomeController>();
-          homeController.currentIndex = 3;
-          homeController.update();
-        });
-      },
       builder: (homeController) {
         return Scaffold(
           backgroundColor: Colors.grey[100],
@@ -107,10 +98,6 @@ class ProfileView extends StatelessWidget {
               ],
             );
           }),
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: homeController.currentIndex,
-            onTap: homeController.changeBottomNavIndex,
-          ),
         );
       },
     );
@@ -155,7 +142,7 @@ class ProfileView extends StatelessWidget {
         // ),
         GestureDetector(
           onTap: () {
-            Get.to(() => const BookingHistoryView());
+            Get.find<HomeController>().changeBottomNavIndex(1);
           },
           child: ProfileMenuItem(
             icon: Icons.assignment_outlined,

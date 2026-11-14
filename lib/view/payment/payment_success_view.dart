@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n.dart';
 import 'package:get/get.dart';
-import '../home/home_screen.dart';
+import '../home/main_shell.dart';
 
 class PaymentSuccessView extends StatefulWidget {
   final int? bookingId;
@@ -45,7 +45,7 @@ class _PaymentSuccessViewState extends State<PaymentSuccessView> {
   }
 
   void _navigateToHome() {
-    Get.offAll(() => const HomeScreen());
+    Get.offAll(() => const MainShell());
   }
 
   @override

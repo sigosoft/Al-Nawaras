@@ -5,7 +5,7 @@ import 'package:get_storage/get_storage.dart';
 import 'config/app_config.dart';
 import 'controller/base_client.dart';
 import 'view/welcome/welcome_screen.dart';
-import 'view/home/home_screen.dart';
+import 'view/home/main_shell.dart';
 import 'controller/home_controller.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'generated/l10n.dart';
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
       ],
       supportedLocales: S.delegate.supportedLocales,
       home: (token != null && token.toString().isNotEmpty)
-          ? const HomeScreen()
+          ? const MainShell()
           : const WelcomeScreen(),
     );
   }

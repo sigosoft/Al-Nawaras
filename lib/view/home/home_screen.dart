@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
 import '../../controller/home_controller.dart';
-import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/draggable_help_button.dart';
 import '../widgets/custom_no_data.dart';
 import '../../generated/l10n.dart';
@@ -20,7 +19,6 @@ class HomeScreen extends StatelessWidget {
       initState: (state) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           final ctrl = Get.find<HomeController>();
-          ctrl.currentIndex = 0;
           ctrl.fetchHomeData(); // Force fetch data explicitly when screen loads
           ctrl.update();
         });
@@ -344,10 +342,6 @@ class HomeScreen extends StatelessWidget {
               ),
               const DraggableHelpButton(),
             ],
-          ),
-          bottomNavigationBar: CustomBottomNavBar(
-            currentIndex: controller.currentIndex,
-            onTap: controller.changeBottomNavIndex,
           ),
         );
       },
