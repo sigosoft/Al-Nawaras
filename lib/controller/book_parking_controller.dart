@@ -232,6 +232,8 @@ class BookParkingController extends GetxController {
       return const AssetImage("lib/assets/images/boat.png");
     } else if (lower.contains('caravan')) {
       return const AssetImage("lib/assets/images/caravan.png");
+    } else if (lower.contains('trailer')) {
+      return const AssetImage("lib/assets/images/trailer.png");
     }
 
     // Generic fallback

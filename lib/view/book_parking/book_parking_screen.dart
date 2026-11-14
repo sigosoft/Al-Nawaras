@@ -355,7 +355,9 @@ class BookParkingScreen extends StatelessWidget {
             _buildParkingTypeItem(
               context,
               typeKey,
-              typeKey, // Use API name as display title
+              // API name as display title, without a trailing full stop
+              // ("Trailers." → "Trailers"); typeKey stays as the API sent it.
+              typeKey.trim().replaceFirst(RegExp(r'\.+$'), ''),
               image,
               controller,
               height,

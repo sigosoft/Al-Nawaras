@@ -15,7 +15,9 @@ class VehicleImages {
       return 'lib/assets/images/boat.png';
     } else if (lower.contains('caravan')) {
       return 'lib/assets/images/caravan.png';
-    } else if (lower.contains('trolly') || lower.contains('trailer')) {
+    } else if (lower.contains('trailer')) {
+      return 'lib/assets/images/trailer.png';
+    } else if (lower.contains('trolly')) {
       return 'lib/assets/images/trolly.png';
     }
     return fallback;

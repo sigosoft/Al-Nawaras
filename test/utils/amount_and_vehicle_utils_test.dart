@@ -41,6 +41,9 @@ void main() {
           'lib/assets/images/boat.png');
       expect(VehicleImages.forType('Caravan Parking Type A'),
           'lib/assets/images/caravan.png');
+      expect(VehicleImages.forType('Trailer parking'),
+          'lib/assets/images/trailer.png');
+      expect(VehicleImages.forType('Trolly'), 'lib/assets/images/trolly.png');
     });
 
     test('falls back for unknown or missing types', () {
