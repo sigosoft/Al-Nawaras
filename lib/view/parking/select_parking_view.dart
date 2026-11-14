@@ -621,19 +621,9 @@ class _SelectParkingViewState extends State<SelectParkingView> {
   /// Design pixels → logical pixels on this device.
   double _d(double v) => v * _k;
 
-  /// API sizes come as length x width ("17m x 5m"); the design shows the
-  /// short side first ("5m x 17m").
-  String _designSize(String raw) {
-    final m = RegExp(r'([\d.]+)\s*(?:m|م)?\s*[xX×]\s*([\d.]+)').firstMatch(raw);
-    if (m == null) return raw;
-    final a = double.parse(m.group(1)!), b = double.parse(m.group(2)!);
-    String fmt(double v) =>
-        v == v.roundToDouble() ? v.toInt().toString() : v.toString();
-    final w = fmt(math.min(a, b)), l = fmt(math.max(a, b));
-    // Left-to-right isolate so Arabic layout keeps "5م x 17م" in order.
-    const lri = '\u{2066}', pdi = '\u{2069}';
-    return '$lri${S.of(context).sizeFormat(w, l)}$pdi';
-  }
+  /// Shows the size in the API's order, e.g. "4.6m x 4m" → "4.6m X 4m".
+  String _designSize(String raw) =>
+      SlotSizeUtils.format(raw, S.of(context));
 
   // ---------------------------------------------------------------------------
   // UI

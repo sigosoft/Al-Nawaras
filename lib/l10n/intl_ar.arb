@@ -533,7 +533,7 @@
   "@noServicesAvailable": {},
   "slotAlreadyBooked": "هذا الموقف محجوز بالفعل ولا يمكن اختياره.",
   "@slotAlreadyBooked": {},
-  "sizeFormat": "{width}م x {length}م",
+  "sizeFormat": "{width}م X {length}م",
   "@sizeFormat": {
     "placeholders": {
       "width": {

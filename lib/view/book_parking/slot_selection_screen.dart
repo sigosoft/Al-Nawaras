@@ -30,11 +30,16 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                 }
                 return GridView.builder(
                   padding: const EdgeInsets.all(20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
                     crossAxisSpacing: 15,
                     mainAxisSpacing: 15,
-                    childAspectRatio: 1.2,
+                    // Fixed height so a 2-line slot name ("B154 - Caravan
+                    // Parking Type A") still leaves room for size + status;
+                    // grows with the phone's text size setting.
+                    mainAxisExtent: MediaQuery.textScalerOf(
+                      context,
+                    ).scale(136),
                   ),
                   itemCount: controller.availableSlotsList.length,
                   itemBuilder: (context, index) {
@@ -74,6 +79,10 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                             width: isSelected ? 2.5 : 1.5,
                           ),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 6,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -86,43 +95,60 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                               color: isSelected
                                   ? Colors.white
                                   : (isFree ? Colors.green : Colors.grey),
-                              size: 24,
+                              size: 22,
                             ),
-                            const SizedBox(height: 5),
+                            const SizedBox(height: 4),
                             Text(
                               slot['name'] ?? S.of(context).notAvailableShort,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
+                                height: 1.2,
                                 fontWeight: FontWeight.bold,
                                 color: isSelected
                                     ? Colors.white
                                     : Colors.black87,
                               ),
                             ),
-                            if (slotSize.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
-                                ),
-                                // Scale down instead of truncating: the
-                                // selected tile's thicker border leaves less room.
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    '${S.of(context).sizeLabel}${SlotSizeUtils.format(slotSize)}',
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : Colors.black54,
-                                    ),
+                            if (slotSize.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              // Label and value on separate lines so the
+                              // size stays readable instead of shrinking.
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  S.of(context).sizeLabel.trim(),
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: isSelected
+                                        ? Colors.white70
+                                        : Colors.black54,
                                   ),
                                 ),
                               ),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  SlotSizeUtils.format(
+                                    slotSize,
+                                    S.of(context),
+                                  ),
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 2),
                             Text(
                               isFree ? S.of(context).slotFreeCaps : S.of(context).slotBookedCaps,
                               style: TextStyle(

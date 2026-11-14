@@ -2184,10 +2184,10 @@ class S {
     );
   }
 
-  /// `{width}m x {length}m`
+  /// `{width}m X {length}m`
   String sizeFormat(String width, String length) {
     return Intl.message(
-      '${width}m x ${length}m',
+      '${width}m X ${length}m',
       name: 'sizeFormat',
       desc: '',
       args: [width, length],

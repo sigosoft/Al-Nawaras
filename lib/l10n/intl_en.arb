@@ -546,7 +546,7 @@
   "@noServicesAvailable": {},
   "slotAlreadyBooked": "This slot is already booked and cannot be selected.",
   "@slotAlreadyBooked": {},
-  "sizeFormat": "{width}m x {length}m",
+  "sizeFormat": "{width}m X {length}m",
   "@sizeFormat": {
     "placeholders": {
       "width": {

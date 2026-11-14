@@ -68,7 +68,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m21(type) => "النوع المحدد: ${type}";
 
-  static String m22(width, length) => "${width}م x ${length}م";
+  static String m22(width, length) => "${width}م X ${length}م";
 
   static String m23(slot) => "الموقف ${slot}";
 

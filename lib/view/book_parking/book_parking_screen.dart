@@ -158,7 +158,7 @@ class BookParkingScreen extends StatelessWidget {
                                               .isNotEmpty) ...[
                                             const SizedBox(height: 4),
                                             Text(
-                                              '${S.of(context).sizeLabel}${SlotSizeUtils.format(controller.selectedSlotSize!)}',
+                                              '${S.of(context).sizeLabel}${SlotSizeUtils.format(controller.selectedSlotSize!, S.of(context))}',
                                               style: const TextStyle(
                                                   fontSize: 12.5,
                                                   fontWeight: FontWeight.w600,
