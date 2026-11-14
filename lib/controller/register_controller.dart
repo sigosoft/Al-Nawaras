@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import '../generated/l10n.dart';
 import '../config/api_constants.dart';
 import '../utils/phone_utils.dart';
 import 'base_client.dart';
@@ -50,8 +51,8 @@ class RegisterController extends GetxController {
   void createAccount() {
     if (fullNameController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your Full Name',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterFullName,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -60,8 +61,8 @@ class RegisterController extends GetxController {
     }
     if (emailController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your Email Address',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterEmailAddress,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -70,8 +71,8 @@ class RegisterController extends GetxController {
     }
     if (!emailController.text.trim().contains('@')) {
       Get.snackbar(
-        'Error',
-        'Email Address must contain @ symbol',
+        S.of(Get.context!).error,
+        S.of(Get.context!).emailMustContainAt,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -81,7 +82,7 @@ class RegisterController extends GetxController {
     final mobileError = PhoneUtils.validationError(mobileController.text);
     if (mobileError != null) {
       Get.snackbar(
-        'Error',
+        S.of(Get.context!).error,
         mobileError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -91,8 +92,8 @@ class RegisterController extends GetxController {
     }
     if (passwordController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your Password',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterPassword,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -101,8 +102,8 @@ class RegisterController extends GetxController {
     }
     if (passwordController.text.length < 6) {
       Get.snackbar(
-        'Error',
-        'Password must be at least 6 characters long',
+        S.of(Get.context!).error,
+        S.of(Get.context!).passwordMinLength,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -111,8 +112,8 @@ class RegisterController extends GetxController {
     }
     if (passwordController.text != confirmPasswordController.text) {
       Get.snackbar(
-        'Error',
-        'Passwords do not match',
+        S.of(Get.context!).error,
+        S.of(Get.context!).passwordsDoNotMatch,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -121,8 +122,8 @@ class RegisterController extends GetxController {
     }
     if (!isTermsAccepted) {
       Get.snackbar(
-        'Error',
-        'Please accept the Terms and Conditions',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseAcceptTerms,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -165,8 +166,8 @@ class RegisterController extends GetxController {
         if (exists) {
           // User already exists — stop and notify
           Get.snackbar(
-            'Error',
-            'User already exists. Please login or use a different email.',
+            S.of(Get.context!).error,
+            S.of(Get.context!).userAlreadyExists,
             backgroundColor: Colors.red,
             colorText: Colors.white,
             snackPosition: SnackPosition.BOTTOM,
@@ -190,8 +191,8 @@ class RegisterController extends GetxController {
         print('Exception caught (check_user): $e');
       }
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred.',
+        S.of(Get.context!).error,
+        S.of(Get.context!).unexpectedError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -241,7 +242,7 @@ class RegisterController extends GetxController {
         final bool isSuccess = data['status'] == true;
         final String message =
             data['message'] ??
-            (isSuccess ? 'Registration successful' : 'Registration failed');
+            (isSuccess ? S.of(Get.context!).registrationSuccessful : S.of(Get.context!).registrationFailed);
 
         if (kDebugMode) {
           print('Registration message: $message');
@@ -253,7 +254,7 @@ class RegisterController extends GetxController {
         if (isSuccess) {
           Get.off(() => const LoginScreen());
           Get.snackbar(
-            'Success',
+            S.of(Get.context!).success,
             message,
             backgroundColor: Colors.green,
             colorText: Colors.white,
@@ -262,7 +263,7 @@ class RegisterController extends GetxController {
           );
         } else {
           Get.snackbar(
-            'Error',
+            S.of(Get.context!).error,
             message,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -278,8 +279,8 @@ class RegisterController extends GetxController {
         print('Exception caught: $e');
       }
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred.',
+        S.of(Get.context!).error,
+        S.of(Get.context!).unexpectedError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,

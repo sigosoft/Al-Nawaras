@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
 import '../view/home/home_screen.dart';
@@ -107,7 +108,7 @@ class RegisterVehicleController extends GetxController {
     } else if (lower.contains('truck')) {
       return 'lib/assets/images/food truck.png';
     } else if (lower.contains('boat')) {
-      return 'lib/assets/images/Boat.png';
+      return 'lib/assets/images/boat.png';
     } else if (lower.contains('trolly')) {
       return 'lib/assets/images/trolly.png';
     }
@@ -136,8 +137,8 @@ class RegisterVehicleController extends GetxController {
 
     if (license.isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter Vehicle Plate Number',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterPlateNumber,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -190,14 +191,20 @@ class RegisterVehicleController extends GetxController {
       debugPrint('Status Code: ${response.statusCode}');
       debugPrint('Response Body: ${response.data}');
 
+      final body = response.data;
+      final createdId = (body is Map && body['data'] is Map)
+          ? body['data']['id']
+          : null;
+      // Success = status true, or (as seen earlier from this API) a created
+      // vehicle id even when status is false. status:false with no id is a
+      // real failure and must not be reported as success.
       if ((response.statusCode == 200 || response.statusCode == 201) &&
-          response.data != null) {
-        // We consider both 200 and 201 as potential success based on API behavior
-        // Even if status field is false (as in user example), if message is success and we got data
+          body is Map &&
+          (body['status'] == true || createdId != null)) {
         storage.remove('vehicle_draft'); // Clear draft on success
         Get.snackbar(
-          'Success',
-          response.data['message'] ?? 'Vehicle registered successfully',
+          S.of(Get.context!).success,
+          response.data['message'] ?? S.of(Get.context!).vehicleRegisteredSuccessfully,
           backgroundColor: const Color(0xFF2ECC71), // Green
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -207,8 +214,8 @@ class RegisterVehicleController extends GetxController {
         Get.offAll(() => const HomeScreen());
       } else {
         Get.snackbar(
-          'Error',
-          response.data['message'] ?? 'Registration failed',
+          S.of(Get.context!).error,
+          response.data['message'] ?? S.of(Get.context!).registrationFailed,
           backgroundColor: const Color(0xFFE30613), // Red
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -217,8 +224,8 @@ class RegisterVehicleController extends GetxController {
     } catch (e) {
       debugPrint('Error registering vehicle: $e');
       Get.snackbar(
-        'Error',
-        'An error occurred during registration',
+        S.of(Get.context!).error,
+        S.of(Get.context!).errorDuringRegistration,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -247,8 +254,8 @@ class RegisterVehicleController extends GetxController {
     storage.write('vehicle_draft', draft);
 
     Get.snackbar(
-      'Draft Saved',
-      'Vehicle details saved as draft',
+      S.of(Get.context!).draftSaved,
+      S.of(Get.context!).vehicleSavedAsDraft,
       backgroundColor: const Color(0xFF2ECC71),
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,

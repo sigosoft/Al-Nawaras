@@ -109,7 +109,7 @@ class BookingCard extends StatelessWidget {
                 Expanded(
                   flex: 3,
                   child: _DetailItem(
-                      label: S.of(context).amountLabel, value: amount),
+                      label: S.of(context).amountExclVat, value: amount),
                 ),
               ],
             ),

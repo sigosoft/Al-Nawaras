@@ -83,9 +83,9 @@ class ProfileHeader extends StatelessWidget {
       final user = controller.profile.value;
       final box = GetStorage();
 
-      final name = user?.name ?? box.read('name') ?? 'User';
-      final mobile = user?.mobile ?? box.read('mobile') ?? 'N/A';
-      final email = user?.email ?? box.read('email') ?? 'N/A';
+      final name = user?.name ?? box.read('name') ?? S.of(Get.context!).userFallback;
+      final mobile = user?.mobile ?? box.read('mobile') ?? S.of(Get.context!).notAvailableShort;
+      final email = user?.email ?? box.read('email') ?? S.of(Get.context!).notAvailableShort;
       final img = user?.profileImage;
 
       const transparentPlaceholder =

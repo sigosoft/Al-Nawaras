@@ -2,6 +2,8 @@ import 'package:al_nawaras/controller/paymob_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import '../generated/l10n.dart';
+
 class PaymobController extends GetxController {
   final PaymobService _paymobService = PaymobService();
 
@@ -24,14 +26,14 @@ class PaymobController extends GetxController {
       );
       if (url == null) {
         Get.snackbar(
-          'Error',
-          'Failed to generate payment URL. Please try again.',
+          S.of(Get.context!).error,
+          S.of(Get.context!).failedToGeneratePaymentUrl,
         );
       }
       return url;
     } catch (e) {
       debugPrint('Paymob generatePaymentUrl error: $e');
-      Get.snackbar('Error', 'An unexpected error occurred.');
+      Get.snackbar(S.of(Get.context!).error, S.of(Get.context!).unexpectedError);
       return null;
     } finally {
       isLoading = false;

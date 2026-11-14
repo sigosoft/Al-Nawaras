@@ -101,8 +101,9 @@ class PaymentSummaryCard extends StatelessWidget {
             child: Divider(height: 1),
           ),
           ...details.where((detail) {
-            final label = (detail['label'] ?? '').toLowerCase().replaceAll(' ', '');
-            return label != 'membershiptype' && label != 'parkingtype';
+            final label = detail['label'] ?? '';
+            return label != S.of(context).membershipType &&
+                label != S.of(context).parkingType;
           }).map((detail) => Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: _buildItemRow(detail['label']!, detail['value']!),

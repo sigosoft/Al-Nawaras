@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import '../config/api_constants.dart';
+import '../generated/l10n.dart';
 
 class BaseClient {
   static final Dio _dio = _initDio();
@@ -72,30 +73,30 @@ class BaseClient {
     print('Error Msg  : ${e.message}');
     print('=====================================================\n');
 
-    String errorMessage = 'A network error occurred. Please try again.';
-    String title = 'Network Error';
+    String errorMessage = S.of(Get.context!).networkErrorTryAgain;
+    String title = S.of(Get.context!).networkError;
     IconData icon = Icons.wifi_off;
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
       errorMessage =
-          'Connection timeout. Please check your internet connection.';
+          S.of(Get.context!).connectionTimeout;
     } else if (e.type == DioExceptionType.connectionError) {
       errorMessage =
-          'Unable to connect to the server. Please verify your network.';
+          S.of(Get.context!).unableToConnectServer;
     } else if (e.type == DioExceptionType.badResponse) {
-      title = 'Error';
+      title = S.of(Get.context!).error;
       icon = Icons.error_outline;
       if (e.response?.data is Map) {
-        errorMessage = e.response?.data['message'] ?? 'Server error occurred.';
+        errorMessage = e.response?.data['message'] ?? S.of(Get.context!).serverErrorOccurred;
       } else {
-        errorMessage = 'Server returned an invalid response.';
+        errorMessage = S.of(Get.context!).invalidServerResponse;
       }
     } else if (e.type == DioExceptionType.cancel) {
-      errorMessage = 'Request was cancelled.';
+      errorMessage = S.of(Get.context!).requestCancelled;
     } else {
-      errorMessage = 'An unexpected network error occurred.';
+      errorMessage = S.of(Get.context!).unexpectedNetworkError;
     }
 
     Get.snackbar(

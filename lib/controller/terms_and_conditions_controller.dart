@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
 
@@ -11,7 +12,7 @@ class TermsAndConditionsController extends GetxController {
   final box = GetStorage();
 
   var isLoading = false.obs;
-  var title = 'Terms & Conditions'.obs;
+  var title = ''.obs;
   var contentEn = ''.obs;
   var contentAr = ''.obs;
 
@@ -71,13 +72,13 @@ class TermsAndConditionsController extends GetxController {
       if (data != null && ok) {
         final termsData = data['data'] ?? {};
         title.value =
-            termsData['title']?.toString() ?? 'Terms & Conditions';
+            termsData['title']?.toString() ?? '';
         contentEn.value = termsData['content']?.toString() ?? '';
         contentAr.value = termsData['content_ar']?.toString() ?? '';
       } else {
         Get.snackbar(
-          'Error',
-          data?['message'] ?? 'Failed to fetch Terms and Conditions',
+          S.of(Get.context!).error,
+          data?['message'] ?? S.of(Get.context!).failedToFetchTerms,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: const Color(0xFFE30613),
           colorText: const Color(0xFFFFFFFF),

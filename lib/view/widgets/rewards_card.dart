@@ -41,11 +41,19 @@ class RewardsCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Image.asset(
-                membershipImage,
-                width: width * 0.22,
-                height: width * 0.22,
-              ),
+              // Only the Silver tier has artwork; other tiers get a neutral
+              // badge instead of a misleading "SILVER" coin.
+              membershipImage.isNotEmpty
+                  ? Image.asset(
+                      membershipImage,
+                      width: width * 0.22,
+                      height: width * 0.22,
+                    )
+                  : Icon(
+                      Icons.workspace_premium,
+                      size: width * 0.2,
+                      color: const Color(0xFF00B0FF),
+                    ),
               SizedBox(width: width * 0.05),
               _buildPointsInfo(context),
             ],

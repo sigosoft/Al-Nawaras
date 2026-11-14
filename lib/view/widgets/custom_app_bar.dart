@@ -19,9 +19,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFFE30613), // Requested custom red color
       leading: IconButton(
         icon: Icon(
-          Directionality.of(context) == TextDirection.rtl
-              ? Icons.arrow_forward_ios
-              : Icons.arrow_back_ios_new,
+          Icons.arrow_back_ios,
           color: Colors.white,
           size: 22,
         ),

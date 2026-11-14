@@ -2388,6 +2388,1542 @@ class S {
       args: [],
     );
   }
+
+  /// `Error`
+  String get error {
+    return Intl.message('Error', name: 'error', desc: '', args: []);
+  }
+
+  /// `Online payment for this item is not available yet. Please contact support.`
+  String get onlinePaymentNotAvailable {
+    return Intl.message(
+      'Online payment for this item is not available yet. Please contact support.',
+      name: 'onlinePaymentNotAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No active booking found`
+  String get noActiveBooking {
+    return Intl.message(
+      'No active booking found',
+      name: 'noActiveBooking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vehicle Type`
+  String get vehicleType {
+    return Intl.message(
+      'Vehicle Type',
+      name: 'vehicleType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status`
+  String get status {
+    return Intl.message('Status', name: 'status', desc: '', args: []);
+  }
+
+  /// `Active Partner`
+  String get activePartner {
+    return Intl.message(
+      'Active Partner',
+      name: 'activePartner',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No matching locations, vehicles or bookings`
+  String get noSearchResults {
+    return Intl.message(
+      'No matching locations, vehicles or bookings',
+      name: 'noSearchResults',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Amount (excl. VAT)`
+  String get amountExclVat {
+    return Intl.message(
+      'Amount (excl. VAT)',
+      name: 'amountExclVat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You will enter your card details on the secure Paymob payment page after tapping Pay.`
+  String get cardDetailsOnSecurePage {
+    return Intl.message(
+      'You will enter your card details on the secure Paymob payment page after tapping Pay.',
+      name: 'cardDetailsOnSecurePage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not open link`
+  String get couldNotOpenLink {
+    return Intl.message(
+      'Could not open link',
+      name: 'couldNotOpenLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link is empty`
+  String get linkIsEmpty {
+    return Intl.message(
+      'Link is empty',
+      name: 'linkIsEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to fetch About Us link`
+  String get failedToFetchAboutUs {
+    return Intl.message(
+      'Failed to fetch About Us link',
+      name: 'failedToFetchAboutUs',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An unexpected error occurred.`
+  String get unexpectedError {
+    return Intl.message(
+      'An unexpected error occurred.',
+      name: 'unexpectedError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notice`
+  String get notice {
+    return Intl.message('Notice', name: 'notice', desc: '', args: []);
+  }
+
+  /// `Unable to fetch availability`
+  String get unableToFetchAvailability {
+    return Intl.message(
+      'Unable to fetch availability',
+      name: 'unableToFetchAvailability',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to check slot availability`
+  String get unableToCheckSlotAvailability {
+    return Intl.message(
+      'Unable to check slot availability',
+      name: 'unableToCheckSlotAvailability',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No Slots Available`
+  String get noSlotsAvailable {
+    return Intl.message(
+      'No Slots Available',
+      name: 'noSlotsAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No units available for the selected {membership} duration. Try another date or parking type.`
+  String noUnitsForDuration(String membership) {
+    return Intl.message(
+      'No units available for the selected $membership duration. Try another date or parking type.',
+      name: 'noUnitsForDuration',
+      desc: '',
+      args: [membership],
+    );
+  }
+
+  /// `Selection Required`
+  String get selectionRequired {
+    return Intl.message(
+      'Selection Required',
+      name: 'selectionRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select a vehicle before proceeding.`
+  String get selectVehicleBeforeProceeding {
+    return Intl.message(
+      'Please select a vehicle before proceeding.',
+      name: 'selectVehicleBeforeProceeding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select both start and end date/time.`
+  String get selectStartAndEndDateTime {
+    return Intl.message(
+      'Please select both start and end date/time.',
+      name: 'selectStartAndEndDateTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select a parking slot on the map first.`
+  String get selectSlotOnMapFirst {
+    return Intl.message(
+      'Please select a parking slot on the map first.',
+      name: 'selectSlotOnMapFirst',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select an available slot type.`
+  String get selectAvailableSlotType {
+    return Intl.message(
+      'Please select an available slot type.',
+      name: 'selectAvailableSlotType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select a parking slot from the available types.`
+  String get selectSlotFromAvailableTypes {
+    return Intl.message(
+      'Please select a parking slot from the available types.',
+      name: 'selectSlotFromAvailableTypes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid Duration`
+  String get invalidDuration {
+    return Intl.message(
+      'Invalid Duration',
+      name: 'invalidDuration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `End time must be after the start time`
+  String get endTimeAfterStartTime {
+    return Intl.message(
+      'End time must be after the start time',
+      name: 'endTimeAfterStartTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select an available Slot Type first`
+  String get selectAvailableSlotTypeFirst {
+    return Intl.message(
+      'Please select an available Slot Type first',
+      name: 'selectAvailableSlotTypeFirst',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your booking was created, but the slot could not be assigned. Please contact support.`
+  String get bookingCreatedSlotNotAssigned {
+    return Intl.message(
+      'Your booking was created, but the slot could not be assigned. Please contact support.',
+      name: 'bookingCreatedSlotNotAssigned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The selected slot could not be found or confirmed. Please try another selection.`
+  String get slotNotFoundOrConfirmed {
+    return Intl.message(
+      'The selected slot could not be found or confirmed. Please try another selection.',
+      name: 'slotNotFoundOrConfirmed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to create the booking. Please try again.`
+  String get unableToCreateBooking {
+    return Intl.message(
+      'Unable to create the booking. Please try again.',
+      name: 'unableToCreateBooking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Slot Unavailable`
+  String get slotUnavailable {
+    return Intl.message(
+      'Slot Unavailable',
+      name: 'slotUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This selection is currently full or already booked.`
+  String get selectionFullOrBooked {
+    return Intl.message(
+      'This selection is currently full or already booked.',
+      name: 'selectionFullOrBooked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Booking Payment`
+  String get bookingPayment {
+    return Intl.message(
+      'Booking Payment',
+      name: 'bookingPayment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Membership Type`
+  String get membershipType {
+    return Intl.message(
+      'Membership Type',
+      name: 'membershipType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Membership`
+  String get membership {
+    return Intl.message('Membership', name: 'membership', desc: '', args: []);
+  }
+
+  /// `Type`
+  String get typeLabel {
+    return Intl.message('Type', name: 'typeLabel', desc: '', args: []);
+  }
+
+  /// `N/A`
+  String get notAvailableShort {
+    return Intl.message('N/A', name: 'notAvailableShort', desc: '', args: []);
+  }
+
+  /// `{type} Parking`
+  String parkingTypeSubtitle(String type) {
+    return Intl.message(
+      '$type Parking',
+      name: 'parkingTypeSubtitle',
+      desc: '',
+      args: [type],
+    );
+  }
+
+  /// `Required`
+  String get required {
+    return Intl.message('Required', name: 'required', desc: '', args: []);
+  }
+
+  /// `Please accept the Terms and Conditions to continue.`
+  String get acceptTermsToContinue {
+    return Intl.message(
+      'Please accept the Terms and Conditions to continue.',
+      name: 'acceptTermsToContinue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Success`
+  String get success {
+    return Intl.message('Success', name: 'success', desc: '', args: []);
+  }
+
+  /// `Coming Soon`
+  String get comingSoon {
+    return Intl.message('Coming Soon', name: 'comingSoon', desc: '', args: []);
+  }
+
+  /// `A network error occurred. Please try again.`
+  String get networkErrorTryAgain {
+    return Intl.message(
+      'A network error occurred. Please try again.',
+      name: 'networkErrorTryAgain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passwords do not match`
+  String get passwordsDoNotMatch {
+    return Intl.message(
+      'Passwords do not match',
+      name: 'passwordsDoNotMatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password must be at least 6 characters long`
+  String get passwordMinLength {
+    return Intl.message(
+      'Password must be at least 6 characters long',
+      name: 'passwordMinLength',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your Password`
+  String get pleaseEnterPassword {
+    return Intl.message(
+      'Please enter your Password',
+      name: 'pleaseEnterPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to fetch support details`
+  String get failedToFetchSupportDetails {
+    return Intl.message(
+      'Failed to fetch support details',
+      name: 'failedToFetchSupportDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your Username or Mobile`
+  String get pleaseEnterUsernameOrMobile {
+    return Intl.message(
+      'Please enter your Username or Mobile',
+      name: 'pleaseEnterUsernameOrMobile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a valid UAE mobile (+971 XX XXX XXXX) or Email`
+  String get enterValidMobileOrEmail {
+    return Intl.message(
+      'Enter a valid UAE mobile (+971 XX XXX XXXX) or Email',
+      name: 'enterValidMobileOrEmail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login successful`
+  String get loginSuccessful {
+    return Intl.message(
+      'Login successful',
+      name: 'loginSuccessful',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login failed. Please check your credentials.`
+  String get loginFailedCheckCredentials {
+    return Intl.message(
+      'Login failed. Please check your credentials.',
+      name: 'loginFailedCheckCredentials',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to get Google token`
+  String get failedToGetGoogleToken {
+    return Intl.message(
+      'Failed to get Google token',
+      name: 'failedToGetGoogleToken',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Facebook login will be available in the next update`
+  String get facebookLoginComingSoon {
+    return Intl.message(
+      'Facebook login will be available in the next update',
+      name: 'facebookLoginComingSoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to generate payment URL. Please try again.`
+  String get failedToGeneratePaymentUrl {
+    return Intl.message(
+      'Failed to generate payment URL. Please try again.',
+      name: 'failedToGeneratePaymentUrl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to fetch Privacy Policy`
+  String get failedToFetchPrivacyPolicy {
+    return Intl.message(
+      'Failed to fetch Privacy Policy',
+      name: 'failedToFetchPrivacyPolicy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Token not found`
+  String get tokenNotFound {
+    return Intl.message(
+      'Token not found',
+      name: 'tokenNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name cannot be empty`
+  String get nameCannotBeEmpty {
+    return Intl.message(
+      'Name cannot be empty',
+      name: 'nameCannotBeEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email cannot be empty`
+  String get emailCannotBeEmpty {
+    return Intl.message(
+      'Email cannot be empty',
+      name: 'emailCannotBeEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid email format`
+  String get invalidEmailFormat {
+    return Intl.message(
+      'Invalid email format',
+      name: 'invalidEmailFormat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update successful`
+  String get updateSuccessful {
+    return Intl.message(
+      'Update successful',
+      name: 'updateSuccessful',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update failed`
+  String get updateFailed {
+    return Intl.message(
+      'Update failed',
+      name: 'updateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your Full Name`
+  String get pleaseEnterFullName {
+    return Intl.message(
+      'Please enter your Full Name',
+      name: 'pleaseEnterFullName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your Email Address`
+  String get pleaseEnterEmailAddress {
+    return Intl.message(
+      'Please enter your Email Address',
+      name: 'pleaseEnterEmailAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email Address must contain @ symbol`
+  String get emailMustContainAt {
+    return Intl.message(
+      'Email Address must contain @ symbol',
+      name: 'emailMustContainAt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please accept the Terms and Conditions`
+  String get pleaseAcceptTerms {
+    return Intl.message(
+      'Please accept the Terms and Conditions',
+      name: 'pleaseAcceptTerms',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User already exists. Please login or use a different email.`
+  String get userAlreadyExists {
+    return Intl.message(
+      'User already exists. Please login or use a different email.',
+      name: 'userAlreadyExists',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Registration successful`
+  String get registrationSuccessful {
+    return Intl.message(
+      'Registration successful',
+      name: 'registrationSuccessful',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Registration failed`
+  String get registrationFailed {
+    return Intl.message(
+      'Registration failed',
+      name: 'registrationFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter Vehicle Plate Number`
+  String get pleaseEnterPlateNumber {
+    return Intl.message(
+      'Please enter Vehicle Plate Number',
+      name: 'pleaseEnterPlateNumber',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vehicle registered successfully`
+  String get vehicleRegisteredSuccessfully {
+    return Intl.message(
+      'Vehicle registered successfully',
+      name: 'vehicleRegisteredSuccessfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An error occurred during registration`
+  String get errorDuringRegistration {
+    return Intl.message(
+      'An error occurred during registration',
+      name: 'errorDuringRegistration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Draft Saved`
+  String get draftSaved {
+    return Intl.message('Draft Saved', name: 'draftSaved', desc: '', args: []);
+  }
+
+  /// `Vehicle details saved as draft`
+  String get vehicleSavedAsDraft {
+    return Intl.message(
+      'Vehicle details saved as draft',
+      name: 'vehicleSavedAsDraft',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to fetch Terms and Conditions`
+  String get failedToFetchTerms {
+    return Intl.message(
+      'Failed to fetch Terms and Conditions',
+      name: 'failedToFetchTerms',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your Email or Mobile Number`
+  String get pleaseEnterEmailOrMobile {
+    return Intl.message(
+      'Please enter your Email or Mobile Number',
+      name: 'pleaseEnterEmailOrMobile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your New Password`
+  String get pleaseEnterNewPassword {
+    return Intl.message(
+      'Please enter your New Password',
+      name: 'pleaseEnterNewPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please confirm your Password`
+  String get pleaseConfirmPassword {
+    return Intl.message(
+      'Please confirm your Password',
+      name: 'pleaseConfirmPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OTP sent successfully`
+  String get otpSentSuccessfully {
+    return Intl.message(
+      'OTP sent successfully',
+      name: 'otpSentSuccessfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter the complete 6-digit OTP`
+  String get enterComplete6DigitOtp {
+    return Intl.message(
+      'Please enter the complete 6-digit OTP',
+      name: 'enterComplete6DigitOtp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password reset successful`
+  String get passwordResetSuccessful {
+    return Intl.message(
+      'Password reset successful',
+      name: 'passwordResetSuccessful',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Membership Subscription`
+  String get membershipSubscription {
+    return Intl.message(
+      'Membership Subscription',
+      name: 'membershipSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Plan Type`
+  String get planType {
+    return Intl.message('Plan Type', name: 'planType', desc: '', args: []);
+  }
+
+  /// `Validity`
+  String get validity {
+    return Intl.message('Validity', name: 'validity', desc: '', args: []);
+  }
+
+  /// `Basic Membership Benefits`
+  String get basicMembershipBenefits {
+    return Intl.message(
+      'Basic Membership Benefits',
+      name: 'basicMembershipBenefits',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Standard Plan`
+  String get standardPlan {
+    return Intl.message(
+      'Standard Plan',
+      name: 'standardPlan',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to send message`
+  String get failedToSendMessage {
+    return Intl.message(
+      'Failed to send message',
+      name: 'failedToSendMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to send image`
+  String get failedToSendImage {
+    return Intl.message(
+      'Failed to send image',
+      name: 'failedToSendImage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network Error`
+  String get networkError {
+    return Intl.message(
+      'Network Error',
+      name: 'networkError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connection timeout. Please check your internet connection.`
+  String get connectionTimeout {
+    return Intl.message(
+      'Connection timeout. Please check your internet connection.',
+      name: 'connectionTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to connect to the server. Please verify your network.`
+  String get unableToConnectServer {
+    return Intl.message(
+      'Unable to connect to the server. Please verify your network.',
+      name: 'unableToConnectServer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server error occurred.`
+  String get serverErrorOccurred {
+    return Intl.message(
+      'Server error occurred.',
+      name: 'serverErrorOccurred',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server returned an invalid response.`
+  String get invalidServerResponse {
+    return Intl.message(
+      'Server returned an invalid response.',
+      name: 'invalidServerResponse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Request was cancelled.`
+  String get requestCancelled {
+    return Intl.message(
+      'Request was cancelled.',
+      name: 'requestCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An unexpected network error occurred.`
+  String get unexpectedNetworkError {
+    return Intl.message(
+      'An unexpected network error occurred.',
+      name: 'unexpectedNetworkError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter your Mobile Number`
+  String get pleaseEnterMobileNumber {
+    return Intl.message(
+      'Please enter your Mobile Number',
+      name: 'pleaseEnterMobileNumber',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mobile number must contain only digits after +971`
+  String get mobileDigitsOnly {
+    return Intl.message(
+      'Mobile number must contain only digits after +971',
+      name: 'mobileDigitsOnly',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mobile number must be exactly 9 digits after +971`
+  String get mobileExactly9Digits {
+    return Intl.message(
+      'Mobile number must be exactly 9 digits after +971',
+      name: 'mobileExactly9Digits',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mobile number cannot be more than 9 digits after +971`
+  String get mobileMax9Digits {
+    return Intl.message(
+      'Mobile number cannot be more than 9 digits after +971',
+      name: 'mobileMax9Digits',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Information`
+  String get information {
+    return Intl.message('Information', name: 'information', desc: '', args: []);
+  }
+
+  /// `Payment method not implemented yet.`
+  String get paymentMethodNotImplemented {
+    return Intl.message(
+      'Payment method not implemented yet.',
+      name: 'paymentMethodNotImplemented',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment Failed`
+  String get paymentFailed {
+    return Intl.message(
+      'Payment Failed',
+      name: 'paymentFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment was declined or failed. Please try again.`
+  String get paymentDeclined {
+    return Intl.message(
+      'Payment was declined or failed. Please try again.',
+      name: 'paymentDeclined',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment Status`
+  String get paymentStatus {
+    return Intl.message(
+      'Payment Status',
+      name: 'paymentStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Payment is still being confirmed. Please check Bookings in a moment.`
+  String get paymentStillConfirming {
+    return Intl.message(
+      'Payment is still being confirmed. Please check Bookings in a moment.',
+      name: 'paymentStillConfirming',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage your account security`
+  String get manageAccountSecurity {
+    return Intl.message(
+      'Manage your account security',
+      name: 'manageAccountSecurity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change Password`
+  String get changePassword {
+    return Intl.message(
+      'Change Password',
+      name: 'changePassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable Biometrics Login`
+  String get enableBiometricsLogin {
+    return Intl.message(
+      'Enable Biometrics Login',
+      name: 'enableBiometricsLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Biometrics functionality will be available in the next update.`
+  String get biometricsComingSoon {
+    return Intl.message(
+      'Biometrics functionality will be available in the next update.',
+      name: 'biometricsComingSoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Two-Step Verification`
+  String get twoStepVerification {
+    return Intl.message(
+      'Two-Step Verification',
+      name: 'twoStepVerification',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Off`
+  String get offStatus {
+    return Intl.message('Off', name: 'offStatus', desc: '', args: []);
+  }
+
+  /// `Two-Step verification will be available in the next update.`
+  String get twoStepComingSoon {
+    return Intl.message(
+      'Two-Step verification will be available in the next update.',
+      name: 'twoStepComingSoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Your Slot`
+  String get selectYourSlot {
+    return Intl.message(
+      'Select Your Slot',
+      name: 'selectYourSlot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No slots available for this type.`
+  String get noSlotsForType {
+    return Intl.message(
+      'No slots available for this type.',
+      name: 'noSlotsForType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `FREE`
+  String get slotFreeCaps {
+    return Intl.message('FREE', name: 'slotFreeCaps', desc: '', args: []);
+  }
+
+  /// `BOOKED`
+  String get slotBookedCaps {
+    return Intl.message('BOOKED', name: 'slotBookedCaps', desc: '', args: []);
+  }
+
+  /// `Selected Type: {type}`
+  String selectedTypeLabel(String type) {
+    return Intl.message(
+      'Selected Type: $type',
+      name: 'selectedTypeLabel',
+      desc: '',
+      args: [type],
+    );
+  }
+
+  /// `Confirm`
+  String get confirm {
+    return Intl.message('Confirm', name: 'confirm', desc: '', args: []);
+  }
+
+  /// `Choose date and time for selecting the slot`
+  String get chooseDateTimeForSlot {
+    return Intl.message(
+      'Choose date and time for selecting the slot',
+      name: 'chooseDateTimeForSlot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No membership packages available`
+  String get noMembershipPackages {
+    return Intl.message(
+      'No membership packages available',
+      name: 'noMembershipPackages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I agree to the `
+  String get iAgreeToThe {
+    return Intl.message(
+      'I agree to the ',
+      name: 'iAgreeToThe',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `hour`
+  String get hourUnit {
+    return Intl.message('hour', name: 'hourUnit', desc: '', args: []);
+  }
+
+  /// `year`
+  String get yearUnit {
+    return Intl.message('year', name: 'yearUnit', desc: '', args: []);
+  }
+
+  /// `Parking`
+  String get parkingFallback {
+    return Intl.message('Parking', name: 'parkingFallback', desc: '', args: []);
+  }
+
+  /// `AM`
+  String get amLabel {
+    return Intl.message('AM', name: 'amLabel', desc: '', args: []);
+  }
+
+  /// `PM`
+  String get pmLabel {
+    return Intl.message('PM', name: 'pmLabel', desc: '', args: []);
+  }
+
+  /// `Take a Photo`
+  String get takeAPhoto {
+    return Intl.message('Take a Photo', name: 'takeAPhoto', desc: '', args: []);
+  }
+
+  /// `Choose from Gallery`
+  String get chooseFromGallery {
+    return Intl.message(
+      'Choose from Gallery',
+      name: 'chooseFromGallery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Type your message here...`
+  String get typeYourMessageHere {
+    return Intl.message(
+      'Type your message here...',
+      name: 'typeYourMessageHere',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `How can we help you?`
+  String get howCanWeHelp {
+    return Intl.message(
+      'How can we help you?',
+      name: 'howCanWeHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Need help? Contact our support team anytime. We’re here to assist you with parking, memberships, payments, and more.`
+  String get helpSupportDescription {
+    return Intl.message(
+      'Need help? Contact our support team anytime. We’re here to assist you with parking, memberships, payments, and more.',
+      name: 'helpSupportDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email Support`
+  String get emailSupport {
+    return Intl.message(
+      'Email Support',
+      name: 'emailSupport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone Support`
+  String get phoneSupport {
+    return Intl.message(
+      'Phone Support',
+      name: 'phoneSupport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not available`
+  String get notAvailable {
+    return Intl.message(
+      'Not available',
+      name: 'notAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy policy not available.`
+  String get privacyPolicyNotAvailable {
+    return Intl.message(
+      'Privacy policy not available.',
+      name: 'privacyPolicyNotAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Profile picture`
+  String get profilePicture {
+    return Intl.message(
+      'Profile picture',
+      name: 'profilePicture',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Camera`
+  String get camera {
+    return Intl.message('Camera', name: 'camera', desc: '', args: []);
+  }
+
+  /// `Gallery`
+  String get gallery {
+    return Intl.message('Gallery', name: 'gallery', desc: '', args: []);
+  }
+
+  /// `Secure Payment`
+  String get securePayment {
+    return Intl.message(
+      'Secure Payment',
+      name: 'securePayment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `JETSKI WITH TRAILER PARKING`
+  String get mapJetskiTrailerParking {
+    return Intl.message(
+      'JETSKI WITH TRAILER PARKING',
+      name: 'mapJetskiTrailerParking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `BOATS PARKING - {section}`
+  String mapBoatsParking(String section) {
+    return Intl.message(
+      'BOATS PARKING - $section',
+      name: 'mapBoatsParking',
+      desc: '',
+      args: [section],
+    );
+  }
+
+  /// `BOATS PARKING - {section} (SHADED)`
+  String mapBoatsParkingShaded(String section) {
+    return Intl.message(
+      'BOATS PARKING - $section (SHADED)',
+      name: 'mapBoatsParkingShaded',
+      desc: '',
+      args: [section],
+    );
+  }
+
+  /// `CARAVAN PARKING - {section}`
+  String mapCaravanParking(String section) {
+    return Intl.message(
+      'CARAVAN PARKING - $section',
+      name: 'mapCaravanParking',
+      desc: '',
+      args: [section],
+    );
+  }
+
+  /// `CARAVAN PARKING - {section}(SHADED)`
+  String mapCaravanParkingShaded(String section) {
+    return Intl.message(
+      'CARAVAN PARKING - $section(SHADED)',
+      name: 'mapCaravanParkingShaded',
+      desc: '',
+      args: [section],
+    );
+  }
+
+  /// `FOOD TRUCK PARKING - Length {length}m`
+  String mapFoodTruckParkingLength(String length) {
+    return Intl.message(
+      'FOOD TRUCK PARKING - Length ${length}m',
+      name: 'mapFoodTruckParkingLength',
+      desc: '',
+      args: [length],
+    );
+  }
+
+  /// `EXIT`
+  String get mapExit {
+    return Intl.message('EXIT', name: 'mapExit', desc: '', args: []);
+  }
+
+  /// `ENTRANCE`
+  String get mapEntrance {
+    return Intl.message('ENTRANCE', name: 'mapEntrance', desc: '', args: []);
+  }
+
+  /// `{name} Membership`
+  String membershipTitle(String name) {
+    return Intl.message(
+      '$name Membership',
+      name: 'membershipTitle',
+      desc: '',
+      args: [name],
+    );
+  }
+
+  /// `{field} (Optional)`
+  String optionalField(String field) {
+    return Intl.message(
+      '$field (Optional)',
+      name: 'optionalField',
+      desc: '',
+      args: [field],
+    );
+  }
+
+  /// `Color`
+  String get color {
+    return Intl.message('Color', name: 'color', desc: '', args: []);
+  }
+
+  /// `e.g. Blue`
+  String get colorHint {
+    return Intl.message('e.g. Blue', name: 'colorHint', desc: '', args: []);
+  }
+
+  /// `Extra Amount`
+  String get extraAmount {
+    return Intl.message(
+      'Extra Amount',
+      name: 'extraAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User`
+  String get userFallback {
+    return Intl.message('User', name: 'userFallback', desc: '', args: []);
+  }
+
+  /// `Silver Member`
+  String get silverMember {
+    return Intl.message(
+      'Silver Member',
+      name: 'silverMember',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Title`
+  String get titleFallback {
+    return Intl.message('Title', name: 'titleFallback', desc: '', args: []);
+  }
+
+  /// `Reward`
+  String get rewardFallback {
+    return Intl.message('Reward', name: 'rewardFallback', desc: '', args: []);
+  }
+
+  /// `Loading...`
+  String get loading {
+    return Intl.message('Loading...', name: 'loading', desc: '', args: []);
+  }
+
+  /// `Guest`
+  String get guest {
+    return Intl.message('Guest', name: 'guest', desc: '', args: []);
+  }
+
+  /// `Spot {slot}`
+  String spotLabel(String slot) {
+    return Intl.message(
+      'Spot $slot',
+      name: 'spotLabel',
+      desc: '',
+      args: [slot],
+    );
+  }
+
+  /// `Confirmed`
+  String get stateConfirmed {
+    return Intl.message(
+      'Confirmed',
+      name: 'stateConfirmed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelled`
+  String get stateCancelled {
+    return Intl.message(
+      'Cancelled',
+      name: 'stateCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Completed`
+  String get stateCompleted {
+    return Intl.message(
+      'Completed',
+      name: 'stateCompleted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expired`
+  String get stateExpired {
+    return Intl.message('Expired', name: 'stateExpired', desc: '', args: []);
+  }
+
+  /// `Draft`
+  String get stateDraft {
+    return Intl.message('Draft', name: 'stateDraft', desc: '', args: []);
+  }
+
+  /// `Pending Payment`
+  String get statePendingPayment {
+    return Intl.message(
+      'Pending Payment',
+      name: 'statePendingPayment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Paid`
+  String get statePaid {
+    return Intl.message('Paid', name: 'statePaid', desc: '', args: []);
+  }
+
+  /// `Hourly`
+  String get planHourly {
+    return Intl.message('Hourly', name: 'planHourly', desc: '', args: []);
+  }
+
+  /// `Daily`
+  String get planDaily {
+    return Intl.message('Daily', name: 'planDaily', desc: '', args: []);
+  }
+
+  /// `Weekly`
+  String get planWeekly {
+    return Intl.message('Weekly', name: 'planWeekly', desc: '', args: []);
+  }
+
+  /// `Monthly`
+  String get planMonthly {
+    return Intl.message('Monthly', name: 'planMonthly', desc: '', args: []);
+  }
+
+  /// `Yearly`
+  String get planYearly {
+    return Intl.message('Yearly', name: 'planYearly', desc: '', args: []);
+  }
+
+  /// `Me`
+  String get meLabel {
+    return Intl.message('Me', name: 'meLabel', desc: '', args: []);
+  }
+
+  /// `Support`
+  String get supportLabel {
+    return Intl.message('Support', name: 'supportLabel', desc: '', args: []);
+  }
+
+  /// `{count, plural, =1{{count} Day} other{{count} Days}}`
+  String durationDays(int count) {
+    return Intl.plural(
+      count,
+      one: '$count Day',
+      other: '$count Days',
+      name: 'durationDays',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{{count} Hour} other{{count} Hours}}`
+  String durationHours(int count) {
+    return Intl.plural(
+      count,
+      one: '$count Hour',
+      other: '$count Hours',
+      name: 'durationHours',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count, plural, =1{{count} Minute} other{{count} Minutes}}`
+  String durationMinutes(int count) {
+    return Intl.plural(
+      count,
+      one: '$count Minute',
+      other: '$count Minutes',
+      name: 'durationMinutes',
+      desc: '',
+      args: [count],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

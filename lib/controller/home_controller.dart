@@ -24,20 +24,29 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../view/login/login_screen.dart';
 import '../view/settings/maintenance.dart';
 import '../config/api_constants.dart';
+import '../utils/date_utils.dart';
+import '../utils/api_labels.dart';
 import 'base_client.dart';
 import 'dart:math' as math;
 
 class HomeController extends GetxController {
   final TextEditingController searchController = TextEditingController();
+  // Kept on the controller so the search field keeps focus while the
+  // sections around it are filtered (the field moves as they hide).
+  final FocusNode searchFocusNode = FocusNode();
+  final GlobalKey searchFieldKey = GlobalKey();
 
   int currentIndex = 0;
   String searchQuery = "";
   bool showAllVehicles = false;
   bool showAllActivities = false;
 
-  String userName = "Loading...";
-  String membershipStatus = "Loading...";
-  String membershipTier = "Loading...";
+  /// Shown until the dashboard loads; views localize it via [loadingPlaceholder].
+  static const String loadingPlaceholder = 'Loading...';
+
+  String userName = loadingPlaceholder;
+  String membershipStatus = loadingPlaceholder;
+  String membershipTier = loadingPlaceholder;
   String? membershipValidUntil;
   bool claimReward = false;
   String? profilePicture;
@@ -180,8 +189,8 @@ class HomeController extends GetxController {
       await storage.erase();
 
       // Clear specific user related data just in case erase() is not immediate enough for sync reads
-      userName = "Loading...";
-      membershipStatus = "Loading...";
+      userName = loadingPlaceholder;
+      membershipStatus = loadingPlaceholder;
       profilePicture = null;
 
       // Ensure we only navigate if we are not already going there
@@ -237,7 +246,7 @@ class HomeController extends GetxController {
         if (response.data['status'] == true) {
           final data = response.data['data'];
 
-          userName = data['user_name'] ?? 'Guest';
+          userName = data['user_name'] ?? S.of(Get.context!).guest;
           profilePicture = data['profile_picture'];
 
           final membership = data['membership_details'];
@@ -246,6 +255,9 @@ class HomeController extends GetxController {
                 membership['status']?.toString() ?? 'No Active Plan';
             if (status.toLowerCase().contains('no active')) {
               membershipStatus = S.of(Get.context!).noActivePlan;
+            } else if (status.toLowerCase() == 'active partner') {
+              // The API sends this label as English text; translate it.
+              membershipStatus = S.of(Get.context!).activePartner;
             } else {
               membershipStatus = status;
             }
@@ -270,7 +282,7 @@ class HomeController extends GetxController {
             allVehicles = vehicles.map((v) {
               String? imageVal = v['vehicle_image']?.toString();
               return {
-                'title': v['vehicle_type_name'] ?? 'Vehicle',
+                'title': v['vehicle_type_name'] ?? S.of(Get.context!).vehicle,
                 'license': v['license_number'] ?? '',
                 'isParked': false,
                 'spot': '',
@@ -308,7 +320,7 @@ class HomeController extends GetxController {
               String displaySub = startStr;
               try {
                 if (startStr.isNotEmpty) {
-                  final dt = DateTime.parse(startStr);
+                  final dt = AppDateUtils.parseApiUtc(startStr)!;
                   final now = DateTime.now();
                   final today = DateTime(now.year, now.month, now.day);
                   final yesterday = today.subtract(const Duration(days: 1));
@@ -330,7 +342,7 @@ class HomeController extends GetxController {
               if (amount > 0) {
                 displaySub += ' AED $amount';
               } else if (a['location'] != null && a['location'] != "false") {
-                displaySub += '-Spot ${a['location']}';
+                displaySub += '-${S.of(Get.context!).spotLabel(a['location'].toString())}';
               }
 
               return <String, dynamic>{
@@ -430,7 +442,7 @@ class HomeController extends GetxController {
 
             String formatStatus(String statusStr) {
               if (statusStr.isEmpty || statusStr.toLowerCase() == 'n/a')
-                return 'N/A';
+                return S.of(Get.context!).notAvailableShort;
               final clean = statusStr.replaceAll('_', ' ').replaceAll('-', ' ');
               return clean
                   .split(' ')
@@ -442,30 +454,48 @@ class HomeController extends GetxController {
                   .join(' ');
             }
 
+            final slotRaw = item['slot']?.toString() ?? '';
+            final slot = (slotRaw.isEmpty || slotRaw == 'null' || slotRaw == 'false')
+                ? ''
+                : slotRaw;
+            final location = item['location']?.toString() ?? '';
+            // Active = not finished/cancelled and not yet ended. "booked" and
+            // "confirmed" bookings are active until their end time.
+            final lowerState = state.toLowerCase();
+            const finishedStates = ['cancel', 'expire', 'done', 'complete', 'close'];
+            final endLocal = AppDateUtils.parseApiUtc(item['end_date']);
+            final isActive =
+                !finishedStates.any(lowerState.contains) &&
+                (endLocal == null || endLocal.isAfter(DateTime.now()));
+
             return {
               'id': item['id'],
               'reference': item['reference'] ?? '',
               'title':
-                  item['membership_type']?.toString() ??
+                  (item['membership_type'] != null
+                      ? ApiLabels.translate(S.of(Get.context!), item['membership_type'])
+                      : null) ??
                   item['reference'] ??
-                  'Parking',
-              'subtitle':
-                  '${item['vehicle'] ?? ''} • ${item['vehicle_type'] ?? ''} • Spot ${item['slot'] ?? item['location'] ?? 'N/A'}',
-              'status': formatStatus(state),
-              'startDate': item['start_date'] ?? '',
-              'endDate': item['end_date'] ?? '',
+                  S.of(Get.context!).parkingFallback,
+              // Only label a real slot as "Spot"; otherwise show the area.
+              'subtitle': [
+                item['vehicle'] ?? '',
+                item['vehicle_type'] ?? '',
+                if (slot.isNotEmpty) S.of(Get.context!).spotLabel(slot) else if (location.isNotEmpty) ApiLabels.translate(S.of(Get.context!), location),
+              ].where((s) => s.toString().isNotEmpty).join(' • '),
+              'slot': slot,
+              // Known API values (booked, Shaded, Hourly…) are translated.
+              'status': ApiLabels.translate(S.of(Get.context!), state) == state
+                  ? formatStatus(state)
+                  : ApiLabels.translate(S.of(Get.context!), state),
+              'startDate': AppDateUtils.formatApiUtc(item['start_date'], fallback: ''),
+              'endDate': AppDateUtils.formatApiUtc(item['end_date'], fallback: ''),
               'amount':
                   '${S.of(Get.context!).currency} ${item['amount'] ?? '0'}',
-              'isActive':
-                  state.toLowerCase().contains('active') ||
-                  state.toLowerCase().contains('payment') ||
-                  state.toLowerCase().contains('progress') ||
-                  state.toLowerCase().contains('pending') ||
-                  state.toLowerCase() == 'paid' ||
-                  state.toLowerCase() == 'draft',
+              'isActive': isActive,
               'monthYear': item['month_year'] ?? 'Recent',
               'extra_amount': item['extra_amount'] ?? 0.0,
-              'location': item['location'] ?? '',
+              'location': ApiLabels.translate(S.of(Get.context!), item['location']),
               'vehicle_type': item['vehicle_type'] ?? '',
               'vehicle': item['vehicle'] ?? '',
             };
@@ -551,7 +581,7 @@ class HomeController extends GetxController {
           final newVehicles = vData.map((v) {
             String? imageVal = v['vehicle_image']?.toString();
             return {
-              'title': v['vehicle_type_name'] ?? 'Vehicle',
+              'title': v['vehicle_type_name'] ?? S.of(Get.context!).vehicle,
               'license': v['license_number'] ?? '',
               'isParked': false,
               'spot': '',
@@ -657,7 +687,7 @@ class HomeController extends GetxController {
               String displaySub = startStr;
               try {
                 if (startStr.isNotEmpty) {
-                  final dt = DateTime.parse(startStr);
+                  final dt = AppDateUtils.parseApiUtc(startStr)!;
                   final now = DateTime.now();
                   final today = DateTime(now.year, now.month, now.day);
                   final yesterday = today.subtract(const Duration(days: 1));
@@ -678,7 +708,7 @@ class HomeController extends GetxController {
               if (amount > 0) {
                 displaySub += ' AED $amount';
               } else if (a['location'] != null && a['location'] != "false") {
-                displaySub += '-Spot ${a['location']}';
+                displaySub += '-${S.of(Get.context!).spotLabel(a['location'].toString())}';
               }
 
               return <String, dynamic>{
@@ -898,6 +928,7 @@ class HomeController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    searchFocusNode.dispose();
     super.onClose();
   }
 }

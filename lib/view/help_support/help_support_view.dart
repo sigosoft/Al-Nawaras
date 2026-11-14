@@ -35,7 +35,7 @@ class HelpSupportView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "How can we help you?",
+                S.of(context).howCanWeHelp,
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -44,7 +44,7 @@ class HelpSupportView extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                "Need help? Contact our support team anytime. We’re here to assist you with parking, memberships, payments, and more.",
+                S.of(context).helpSupportDescription,
                 style: TextStyle(
                   fontSize: 15,
                   color: Colors.grey[600],
@@ -56,20 +56,20 @@ class HelpSupportView extends StatelessWidget {
               // Email Support Card
               _buildContactCard(
                 icon: Icons.email_outlined,
-                title: "Email Support",
+                title: S.of(context).emailSupport,
                 value: controller.supportEmail.value.isNotEmpty
                     ? controller.supportEmail.value
-                    : "Not available",
+                    : S.of(context).notAvailable,
               ),
               const SizedBox(height: 16),
 
               // Phone Support Card
               _buildContactCard(
                 icon: Icons.phone_outlined,
-                title: "Phone Support",
+                title: S.of(context).phoneSupport,
                 value: controller.supportPhone.value.isNotEmpty
                     ? controller.supportPhone.value
-                    : "Not available",
+                    : S.of(context).notAvailable,
               ),
             ],
           ),
@@ -85,7 +85,7 @@ class HelpSupportView extends StatelessWidget {
   }) {
     return InkWell(
       onTap: () {
-        if (value.isNotEmpty && value != "Not available") {
+        if (value.isNotEmpty && value != S.of(Get.context!).notAvailable) {
           Clipboard.setData(ClipboardData(text: value));
         }
       },
@@ -129,6 +129,11 @@ class HelpSupportView extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     value,
+                    // Phone numbers and emails are left-to-right; without this
+                    // Arabic layout reorders "+971 800…" to "…800 971+".
+                    textDirection: value == S.of(Get.context!).notAvailable
+                        ? null
+                        : TextDirection.ltr,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

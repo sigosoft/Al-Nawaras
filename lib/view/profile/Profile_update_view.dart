@@ -24,9 +24,7 @@ class ProfileUpdateView extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Icon(
-            Directionality.of(context) == TextDirection.rtl
-                ? Icons.arrow_forward_ios
-                : Icons.arrow_back_ios,
+            Icons.arrow_back_ios,
             color: Colors.white,
             size: 20,
           ),
@@ -197,10 +195,10 @@ class ProfileUpdateView extends StatelessWidget {
                     icon: const Icon(Icons.close, color: Colors.black87),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      "Profile picture",
-                      style: TextStyle(
+                      S.of(context).profilePicture,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
@@ -253,9 +251,9 @@ class ProfileUpdateView extends StatelessWidget {
                   color: Color(0xFFE30613),
                 ),
               ),
-              title: const Text(
-                "Camera",
-                style: TextStyle(fontWeight: FontWeight.w500),
+              title: Text(
+                S.of(context).camera,
+                style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -274,9 +272,9 @@ class ProfileUpdateView extends StatelessWidget {
                   color: Color(0xFFE30613),
                 ),
               ),
-              title: const Text(
-                "Gallery",
-                style: TextStyle(fontWeight: FontWeight.w500),
+              title: Text(
+                S.of(context).gallery,
+                style: const TextStyle(fontWeight: FontWeight.w500),
               ),
               onTap: () {
                 Navigator.pop(context);

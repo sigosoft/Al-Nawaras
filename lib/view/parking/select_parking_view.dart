@@ -8,6 +8,7 @@ import '../../controller/base_client.dart';
 import '../../controller/book_parking_controller.dart';
 import '../../generated/l10n.dart';
 import '../../utils/slot_size_utils.dart';
+import '../../utils/api_labels.dart';
 import 'dart:math' as math;
 
 class _SlotRowConfig {
@@ -32,6 +33,36 @@ class _SlotRowConfig {
   });
 }
 
+/// Localized text painted on the parking map canvas.
+class _MapLabels {
+  final String jetskiTrailer;
+  final String boatsA;
+  final String boatsAShaded;
+  final String boatsB;
+  final String boatsBShaded;
+  final String foodTruck17;
+  final String foodTruck13;
+  final String caravanB;
+  final String caravanBShaded;
+  final String caravanAShaded;
+  final String exit;
+  final String entrance;
+
+  _MapLabels.of(BuildContext context)
+    : jetskiTrailer = S.of(context).mapJetskiTrailerParking,
+      boatsA = S.of(context).mapBoatsParking('A'),
+      boatsAShaded = S.of(context).mapBoatsParkingShaded('A'),
+      boatsB = S.of(context).mapBoatsParking('B'),
+      boatsBShaded = S.of(context).mapBoatsParkingShaded('B'),
+      foodTruck17 = S.of(context).mapFoodTruckParkingLength('17'),
+      foodTruck13 = S.of(context).mapFoodTruckParkingLength('13'),
+      caravanB = S.of(context).mapCaravanParking('B'),
+      caravanBShaded = S.of(context).mapCaravanParkingShaded('B'),
+      caravanAShaded = S.of(context).mapCaravanParkingShaded('A'),
+      exit = S.of(context).mapExit,
+      entrance = S.of(context).mapEntrance;
+}
+
 class SelectParkingView extends StatefulWidget {
   final bool isDirectionMode;
   final int? bookingId;
@@ -53,10 +84,12 @@ class _SelectParkingViewState extends State<SelectParkingView> {
   String selectedLocationType = "";
   String selectedSlotSize = "";
   bool isLoadingData = false;
+  bool noActiveBooking = false; // direction mode: user has no booking to show
 
   List<String> bookedSlots = [];
   List<String> shadedSlots = [];
   Map<String, dynamic>? lookupVehicle;
+  String _activeBookingVehicle = ""; // e.g. "55555 (2023)" from history
   String initialConfirmedSlot = "";
 
   final double canvasWidth = 3500.0;
@@ -134,10 +167,11 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadSavedSlot();
+      // In direction mode the backend booking is the source of truth; a
+      // locally saved selection would highlight a slot the user never booked.
+      if (!widget.isDirectionMode) _loadSavedSlot();
       _applyGloballyConfirmedSlots();
       if (widget.isDirectionMode) {
-        _lookupVehicle();
         _fetchDynamicParkingDetails();
       } else {
         _fetchVehicleTypes();
@@ -265,53 +299,45 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     }
   }
 
-  Future<void> _lookupVehicle() async {
+  /// Looks up the booked vehicle via the documented
+  /// `GET /api/vehicles/lookup?license_number=...`.
+  Future<void> _lookupVehicle(String licenseNumber) async {
+    if (licenseNumber.isEmpty) return;
     try {
-      setState(() {
-        isLoadingData = true;
-      });
-
       final dio = BaseClient.dio;
-      final storage = GetStorage();
-      final token = storage.read('token');
+      final token = GetStorage().read('token');
       final headers = {
         if (token != null) 'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       };
 
-      debugPrint('\n--- API REQUEST (lookup) ---');
-      debugPrint('URL: ${ApiConstants.lookup}');
-      debugPrint('Headers: $headers');
+      debugPrint('\n--- API REQUEST (vehicles/lookup) ---');
+      debugPrint('URL: ${ApiConstants.vehicleLookup}');
+      debugPrint('Params: {license_number: $licenseNumber}');
 
       final response = await dio.get(
-        ApiConstants.lookup,
+        ApiConstants.vehicleLookup,
+        queryParameters: {'license_number': licenseNumber},
         options: Options(headers: headers),
       );
 
-      debugPrint('--- API RESPONSE (lookup) ---');
+      debugPrint('--- API RESPONSE (vehicles/lookup) ---');
       debugPrint('Status Code: ${response.statusCode}');
       debugPrint('Response Body: ${response.data}');
 
-      if (response.statusCode == 200 && response.data != null) {
-        if (response.data['status'] == true) {
-          if (mounted) {
-            setState(() {
-              lookupVehicle = response.data['data'];
-            });
-          }
-        }
+      final data = response.data is Map ? response.data['data'] : null;
+      if (response.statusCode == 200 &&
+          response.data['status'] == true &&
+          data is Map &&
+          data.isNotEmpty &&
+          mounted) {
+        setState(() => lookupVehicle = Map<String, dynamic>.from(data));
       }
     } catch (e) {
+      // 404 "Vehicle not found" lands here; the vehicle row is just hidden.
       debugPrint('Error looking up vehicle: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoadingData = false;
-        });
-      }
     }
   }
-
   Future<void> _fetchDynamicParkingDetails() async {
     try {
       setState(() {
@@ -326,14 +352,34 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         'Accept': 'application/json',
       };
 
+      // Never fall back to a fixed booking id: booking_id=1 belongs to
+      // another customer. In direction mode, use the user's own active
+      // booking from their history; otherwise there is nothing to load.
+      int? bookingId = widget.bookingId;
+      if (bookingId == null && widget.isDirectionMode) {
+        bookingId = await _findActiveBookingId(headers, dio);
+        // History gives the vehicle as "<plate> (<model>)"; look up the plate.
+        _lookupVehicle(_activeBookingVehicle.split(' (').first.trim());
+      }
+      if (bookingId == null) {
+        if (mounted && widget.isDirectionMode) {
+          setState(() {
+            noActiveBooking = true;
+            selectedSlotCode = "";
+            selectedSlotNumber = "";
+          });
+        }
+        return;
+      }
+
       debugPrint('\n--- API REQUEST (location_details) ---');
       debugPrint('URL: ${ApiConstants.locationDetails}');
-      debugPrint('Parameters: {booking_id: ${widget.bookingId ?? 1}}');
+      debugPrint('Parameters: {booking_id: $bookingId}');
 
       // 1. Fetch location details
       final locationResponse = await dio.get(
         ApiConstants.locationDetails,
-        queryParameters: {'booking_id': widget.bookingId ?? 1},
+        queryParameters: {'booking_id': bookingId},
         options: Options(headers: headers),
       );
 
@@ -360,8 +406,9 @@ class _SelectParkingViewState extends State<SelectParkingView> {
       // If we reach here in direction mode, it means no valid booking was found
       if (mounted && widget.isDirectionMode) {
         setState(() {
-          // Do not clear selectedSlotCode here to preserve local selection/persistence
-          selectedSlotNumber = "N/A";
+          noActiveBooking = true;
+          selectedSlotCode = "";
+          selectedSlotNumber = "";
         });
       }
     } catch (e) {
@@ -380,6 +427,50 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     }
   }
 
+  /// Returns the id of the user's most recent booking that has a slot and
+  /// is still current (not cancelled, expired, completed or unpaid).
+  Future<int?> _findActiveBookingId(
+    Map<String, dynamic> headers,
+    Dio dio,
+  ) async {
+    try {
+      final response = await dio.get(
+        ApiConstants.parkingHistory,
+        queryParameters: {'limit': 20, 'offset': 0},
+        options: Options(headers: headers),
+      );
+      if (response.statusCode != 200 ||
+          response.data == null ||
+          response.data['status'] != true) {
+        return null;
+      }
+      final List history = response.data['data']?['history'] ?? [];
+      const inactive = [
+        'cancel',
+        'expire',
+        'done',
+        'complete',
+        'close',
+        'draft',
+        'pending',
+      ];
+      for (final b in history) {
+        if (b is! Map) continue;
+        final state = (b['state'] ?? '').toString().toLowerCase();
+        final slot = (b['slot'] ?? '').toString();
+        if (slot.isEmpty || slot == 'false' || slot == 'null') continue;
+        if (inactive.any(state.contains)) continue;
+        final id = int.tryParse(b['id']?.toString() ?? '');
+        if (id != null) {
+          _activeBookingVehicle = (b['vehicle'] ?? '').toString();
+          return id;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error finding active booking: $e');
+    }
+    return null;
+  }
   Future<void> _fetchParkingHistory() async {
     try {
       final dio = BaseClient.dio;
@@ -406,21 +497,12 @@ class _SelectParkingViewState extends State<SelectParkingView> {
                 if (slotStr != null &&
                     slotStr != "null" &&
                     slotStr.isNotEmpty) {
-                  final prefix = _getPrefixFromSlotNumber(slotStr);
-                  final num = _getNumberFromSlotNumber(slotStr);
-                  if (prefix.isNotEmpty && num.isNotEmpty) {
-                    for (final row in _slotRows) {
-                      if (row.prefix.startsWith(prefix)) {
-                        final s1Code = "${row.prefix}_S1-$num";
-                        final s2Code = "${row.prefix}_S2-$num";
-                        if (!bookedSlots.contains(s1Code)) {
-                          bookedSlots.add(s1Code);
-                        }
-                        if (!bookedSlots.contains(s2Code)) {
-                          bookedSlots.add(s2Code);
-                        }
-                      }
-                    }
+                  // Map the backend name (e.g. "A03 - JETSKI") to exactly one
+                  // map slot. Matching by prefix used to also grey out the
+                  // same number in the other Jetski row (B03).
+                  final code = _resolveMapCode(slotStr);
+                  if (code.isNotEmpty && !bookedSlots.contains(code)) {
+                    bookedSlots.add(code);
                   }
                 }
               }
@@ -432,35 +514,6 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     } catch (e) {
       debugPrint('Error fetching history for booked slots: $e');
     }
-  }
-
-  String _getPrefixFromSlotNumber(String slotNumber) {
-    if (slotNumber.contains('JETSKI WITH TRAILER')) {
-      // Logic to distinguish JTSP1 vs JTSP2 might need more info from API
-      // For now fallback to first
-      return 'JTSP1';
-    }
-    if (slotNumber.contains('FOOD TRUCK') && slotNumber.contains('17 m')) {
-      return 'FTP17';
-    }
-    if (slotNumber.contains('FOOD TRUCK') && slotNumber.contains('13 m')) {
-      return 'FTP13A';
-    }
-    if (slotNumber.contains('JETSKI')) return 'JTSP';
-    if (slotNumber.contains('FOOD TRUCK')) return 'FTP';
-    if (slotNumber.contains('BOATS')) return 'BTP';
-    if (slotNumber.contains('CARAVAN')) return 'CTP';
-    return '';
-  }
-
-  String _getNumberFromSlotNumber(String slotNumber) {
-    // Expected format "A01 - JETSKI" or "B12 - FOOD TRUCK"
-    final regex = RegExp(r'[A-D](\d+) -');
-    final match = regex.firstMatch(slotNumber);
-    if (match != null) {
-      return match.group(1) ?? "";
-    }
-    return "";
   }
 
   Future<void> _fetchSlotDetails(
@@ -502,7 +555,9 @@ class _SelectParkingViewState extends State<SelectParkingView> {
             */
 
             selectedLocation =
-                data['location_name']?.toString() ??
+                (data['location_name'] != null
+                    ? ApiLabels.translate(S.of(context), data['location_name'])
+                    : null) ??
                 _getFriendlyLocation(
                   selectedSlotCode.isNotEmpty
                       ? selectedSlotCode.split('-').first
@@ -517,6 +572,10 @@ class _SelectParkingViewState extends State<SelectParkingView> {
                 : _getSlotSize(slotNumber.split('-').first);
             selectedSlotNumber = data['slot_number']?.toString() ?? "N/A";
             selectedLocationCode = data['location_code']?.toString() ?? "N/A";
+            if (widget.isDirectionMode) {
+              // Highlight the booked slot itself on the map.
+              selectedSlotCode = _resolveMapCode(selectedSlotNumber);
+            }
 
             // If we are initially loading the slot from the backend for this booking
             if (initialConfirmedSlot.isEmpty && selectedSlotNumber != "N/A") {
@@ -611,6 +670,42 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     } catch (e) {
       debugPrint('Error fetching slot size: $e');
     }
+  }
+
+  /// Maps a backend slot name such as "A01 - JETSKI" to the internal map
+  /// code (e.g. "JTSP1_S1-01"). The display name does not say which map
+  /// section the slot is in, so a slot this device confirmed earlier is
+  /// preferred; otherwise numbers above section 1's 17 slots go to section 2.
+  String _resolveMapCode(String slotNumber) {
+    final candidates = <String>[
+      ...((GetStorage().read('user_confirmed_parking_slots') as List?) ?? [])
+          .map((e) => e.toString()),
+    ];
+    for (final code in candidates) {
+      final parts = code.split('-');
+      final index = int.tryParse(parts.last);
+      if (parts.length == 2 &&
+          index != null &&
+          _formatSlotCode(parts.first, index) == slotNumber) {
+        return code;
+      }
+    }
+    final match = RegExp(r'^\s*([A-E])(\d+)\s*-').firstMatch(slotNumber);
+    if (match == null) return "";
+    const rowPrefixes = {
+      'A': 'JTSP1',
+      'B': 'JTSP2',
+      'C': 'FTP17',
+      'D': 'FTP13A',
+      'E': 'FTP13B',
+    };
+    final index = int.parse(match.group(2)!);
+    final row = _slotRows.firstWhere(
+      (r) => r.prefix == rowPrefixes[match.group(1)],
+    );
+    final section = index <= row.sec1Count ? 'S1' : 'S2';
+    if (index < 1 || index > row.sec2Count) return "";
+    return "${row.prefix}_$section-${index.toString().padLeft(2, '0')}";
   }
 
   String _formatSlotCode(String prefix, int index) {
@@ -711,9 +806,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         centerTitle: false,
         leading: IconButton(
           icon: Icon(
-            Directionality.of(context) == TextDirection.rtl
-                ? Icons.arrow_forward_ios
-                : Icons.arrow_back_ios,
+            Icons.arrow_back_ios,
             color: Colors.white,
             size: 19,
           ),
@@ -751,6 +844,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
                                   slotRows: _slotRows,
                                   bookedSlots: bookedSlots,
                                   shadedSlots: shadedSlots,
+                                  labels: _MapLabels.of(context),
                                 ),
                               ),
                             ),
@@ -811,8 +905,12 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     }
   }
 
+  /// Map codes carry a section suffix ("JTSP1_S1"); the lookups below are
+  /// keyed by row prefix only ("JTSP1").
+  String _rowPrefix(String prefix) => prefix.replaceAll(RegExp(r'_S[12]$'), '');
+
   String _getFriendlyLocation(String prefix) {
-    switch (prefix) {
+    switch (_rowPrefix(prefix)) {
       case 'JTSP1':
       case 'JTSP2':
         return S.of(context).jetskiWithTrailerParking;
@@ -835,6 +933,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
   }
 
   String _getLocationType(String prefix, [String? code]) {
+    prefix = _rowPrefix(prefix);
     if (code != null && shadedSlots.contains(code)) return S.of(context).shaded;
     if (prefix == 'BTP' || prefix == 'CTP') return S.of(context).shaded;
     if (prefix.contains('FTP')) return S.of(context).open;
@@ -842,7 +941,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
   }
 
   String _getSlotSize(String prefix) {
-    switch (prefix) {
+    switch (_rowPrefix(prefix)) {
       case 'JTSP1':
       case 'JTSP2':
         return S.of(context).sizeFormat("4", "10");
@@ -884,11 +983,22 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildLegendRow(),
+          if (widget.isDirectionMode && noActiveBooking) ...[
+            const SizedBox(height: 18),
+            Text(
+              S.of(context).noActiveBooking,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.black87,
+              ),
+            ),
+          ],
           if (widget.isDirectionMode && lookupVehicle != null) ...[
             const SizedBox(height: 18),
             _buildInfoRow(
               '${S.of(context).vehicle} : ',
-              "${lookupVehicle!['license_number'] ?? ''} • ${lookupVehicle!['vehicle_type_name'] ?? ''}",
+              "${lookupVehicle!['license_number'] ?? ''} • ${lookupVehicle!['vehicle_type_name'] ?? lookupVehicle!['model'] ?? ''}",
             ),
           ],
           if (selectedSlotCode.isNotEmpty) ...[
@@ -1029,12 +1139,14 @@ class _CompleteMapPainter extends CustomPainter {
   final List<_SlotRowConfig> slotRows;
   final List<String> bookedSlots;
   final List<String> shadedSlots;
+  final _MapLabels labels;
 
   _CompleteMapPainter({
     required this.selectedCode,
     required this.slotRows,
     required this.bookedSlots,
     required this.shadedSlots,
+    required this.labels,
   });
 
   @override
@@ -1071,9 +1183,9 @@ class _CompleteMapPainter extends CustomPainter {
       roadPaint,
       curvePaint,
       linePaint,
-      label: 'JETSKI WITH TRAILER PARKING',
-      sec2Label: 'BOATS PARKING - A',
-      sec2ShadedLabel: 'BOATS PARKING - A (SHADED)',
+      label: labels.jetskiTrailer,
+      sec2Label: labels.boatsA,
+      sec2ShadedLabel: labels.boatsAShaded,
     );
     _drawContinuousRoadTrack(
       canvas,
@@ -1083,9 +1195,9 @@ class _CompleteMapPainter extends CustomPainter {
       roadPaint,
       curvePaint,
       linePaint,
-      label: 'JETSKI WITH TRAILER PARKING',
-      sec2Label: 'BOATS PARKING - B',
-      sec2ShadedLabel: 'BOATS PARKING - B (SHADED)',
+      label: labels.jetskiTrailer,
+      sec2Label: labels.boatsB,
+      sec2ShadedLabel: labels.boatsBShaded,
     );
     _drawContinuousRoadTrack(
       canvas,
@@ -1095,9 +1207,9 @@ class _CompleteMapPainter extends CustomPainter {
       roadPaint,
       curvePaint,
       linePaint,
-      label: 'FOOD TRUCK PARKING - Length 17m',
-      sec2Label: 'BOATS PARKING - B',
-      sec2ShadedLabel: 'CARAVAN PARKING - B(SHADED)',
+      label: labels.foodTruck17,
+      sec2Label: labels.boatsB,
+      sec2ShadedLabel: labels.caravanBShaded,
     );
     _drawContinuousRoadTrack(
       canvas,
@@ -1107,9 +1219,9 @@ class _CompleteMapPainter extends CustomPainter {
       roadPaint,
       curvePaint,
       linePaint,
-      label: 'FOOD TRUCK PARKING - Length 13m',
-      sec2Label: 'CARAVAN PARKING - B',
-      sec2ShadedLabel: 'CARAVAN PARKING - B(SHADED)',
+      label: labels.foodTruck13,
+      sec2Label: labels.caravanB,
+      sec2ShadedLabel: labels.caravanBShaded,
     );
     _drawContinuousRoadTrack(
       canvas,
@@ -1119,9 +1231,9 @@ class _CompleteMapPainter extends CustomPainter {
       roadPaint,
       curvePaint,
       linePaint,
-      label: 'FOOD TRUCK PARKING - Length 13m',
-      sec2Label: 'CARAVAN PARKING - B',
-      sec2ShadedLabel: 'CARAVAN PARKING - A(SHADED)',
+      label: labels.foodTruck13,
+      sec2Label: labels.caravanB,
+      sec2ShadedLabel: labels.caravanAShaded,
     );
 
     // --- 2. DRAW VERTICAL ENTRANCE/EXIT ROADWAY ---
@@ -1277,12 +1389,12 @@ class _CompleteMapPainter extends CustomPainter {
     // Lane Labels: EXIT & ENTRANCE
     _drawVerticalLabel(
       canvas,
-      "EXIT",
+      labels.exit,
       Offset(x + width * 0.30, 80 + height - 20),
     );
     _drawVerticalLabel(
       canvas,
-      "ENTRANCE",
+      labels.entrance,
       Offset(x + width * 0.70, 65 + height - 20),
     );
 

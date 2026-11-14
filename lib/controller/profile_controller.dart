@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../generated/l10n.dart';
 import '../config/api_constants.dart';
 import '../model/profile_model.dart';
 import '../utils/phone_utils.dart';
@@ -48,8 +49,8 @@ class ProfileController extends GetxController {
       isLoading(true);
       if (token == null || token!.isEmpty) {
         Get.snackbar(
-          "Error", 
-          "Token not found", 
+          S.of(Get.context!).error,
+          S.of(Get.context!).tokenNotFound, 
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -171,8 +172,8 @@ class ProfileController extends GetxController {
   Future<void> updateProfile() async {
     if (nameController.text.trim().isEmpty) {
       Get.snackbar(
-        "Error",
-        "Name cannot be empty",
+        S.of(Get.context!).error,
+        S.of(Get.context!).nameCannotBeEmpty,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -182,8 +183,8 @@ class ProfileController extends GetxController {
     }
     if (emailController.text.trim().isEmpty) {
       Get.snackbar(
-        "Error",
-        "Email cannot be empty",
+        S.of(Get.context!).error,
+        S.of(Get.context!).emailCannotBeEmpty,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -192,8 +193,8 @@ class ProfileController extends GetxController {
     }
     if (!GetUtils.isEmail(emailController.text.trim())) {
       Get.snackbar(
-        "Error",
-        "Invalid email format",
+        S.of(Get.context!).error,
+        S.of(Get.context!).invalidEmailFormat,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -203,7 +204,7 @@ class ProfileController extends GetxController {
     final phoneError = PhoneUtils.validationError(phoneController.text);
     if (phoneError != null) {
       Get.snackbar(
-        "Error",
+        S.of(Get.context!).error,
         phoneError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -276,8 +277,8 @@ class ProfileController extends GetxController {
 
       if (data['status'] == true) {
         Get.snackbar(
-          "Success",
-          data['message'] ?? "Update successful",
+          S.of(Get.context!).success,
+          data['message'] ?? S.of(Get.context!).updateSuccessful,
           backgroundColor: Colors.green,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -309,8 +310,8 @@ class ProfileController extends GetxController {
         });
       } else {
         Get.snackbar(
-          "Error",
-          data['message'] ?? "Update failed",
+          S.of(Get.context!).error,
+          data['message'] ?? S.of(Get.context!).updateFailed,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,

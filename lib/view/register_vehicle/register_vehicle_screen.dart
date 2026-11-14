@@ -23,9 +23,7 @@ class RegisterVehicleScreen extends StatelessWidget {
             elevation: 0,
             leading: IconButton(
               icon: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.arrow_forward_ios
-                    : Icons.arrow_back_ios_new,
+                Icons.arrow_back_ios,
                 color: Colors.white,
                 size: 20,
               ),
@@ -102,7 +100,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel('${S.of(context).model} (Optional)'),
+                      _buildLabel(S.of(context).optionalField(S.of(context).model)),
                       _buildTextField(
                         controller.modelController,
                         S.of(context).modelHint,
@@ -110,7 +108,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel('${S.of(context).chassisNumber} (Optional)'),
+                      _buildLabel(S.of(context).optionalField(S.of(context).chassisNumber)),
                       _buildTextField(
                         controller.chassisController,
                         S.of(context).chassisHint,
@@ -118,7 +116,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel('${S.of(context).year} (Optional)'),
+                      _buildLabel(S.of(context).optionalField(S.of(context).year)),
                       _buildTextField(
                         controller.yearController,
                         S.of(context).yearHint,
@@ -126,10 +124,10 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.02),
-                      _buildLabel('Color (Optional)'),
+                      _buildLabel(S.of(context).optionalField(S.of(context).color)),
                       _buildTextField(
                         controller.colorController,
-                        'e.g. Blue',
+                        S.of(context).colorHint,
                         height,
                         width,
                       ),
@@ -172,7 +170,7 @@ class RegisterVehicleScreen extends StatelessWidget {
                         width,
                       ),
                       SizedBox(height: height * 0.035),
-                      _buildLabel('${S.of(context).vehiclePhoto} (Optional)'),
+                      _buildLabel(S.of(context).optionalField(S.of(context).vehiclePhoto)),
                       _buildUploadBox(
                         S.of(context).tapToUploadPhoto,
                         controller.onUploadPhotoClick,
@@ -253,7 +251,7 @@ class RegisterVehicleScreen extends StatelessWidget {
       for (int j = 0; j < 3; j++) {
         if (i + j < types.length) {
           final vt = types[i + j];
-          final name = vt['name']?.toString() ?? 'Vehicle';
+          final name = vt['name']?.toString() ?? S.of(context).vehicle;
           final imagePath = controller.getVehicleImage(name);
           rowChildren.add(
             _buildTypeItem(name, imagePath, controller, height, width),

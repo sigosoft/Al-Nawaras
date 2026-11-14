@@ -6,6 +6,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
+import '../generated/l10n.dart';
 
 class AboutUsController extends GetxController {
   final Dio dio = BaseClient.dio;
@@ -53,20 +54,22 @@ class AboutUsController extends GetxController {
         if (link.isNotEmpty) {
           final Uri url = Uri.parse(link);
           try {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
+            // Open inside the app (Custom Tab / SFSafariViewController) so the
+            // user stays in Al-Nawaras instead of switching to another browser.
+            await launchUrl(url, mode: LaunchMode.inAppBrowserView);
           } catch (e) {
             if (kDebugMode) {
               print('LAUNCH ERROR: $e');
             }
-            Get.snackbar("Error", "Could not open link");
+            Get.snackbar(S.of(Get.context!).error, S.of(Get.context!).couldNotOpenLink);
           }
         } else {
-          Get.snackbar("Error", "Link is empty");
+          Get.snackbar(S.of(Get.context!).error, S.of(Get.context!).linkIsEmpty);
         }
       } else {
         Get.snackbar(
-          "Error",
-          data['message'] ?? "Failed to fetch About Us link",
+          S.of(Get.context!).error,
+          data['message'] ?? S.of(Get.context!).failedToFetchAboutUs,
         );
       }
     } on DioException catch (e) {
@@ -76,7 +79,7 @@ class AboutUsController extends GetxController {
       if (kDebugMode) {
         print('DioException in fetchAboutUs: ${e.message}');
       }
-      Get.snackbar("Error", "Failed to connect to server");
+      Get.snackbar(S.of(Get.context!).error, S.of(Get.context!).errorServer);
     } catch (e) {
       if (Get.isDialogOpen ?? false) {
         Get.back();
@@ -84,7 +87,7 @@ class AboutUsController extends GetxController {
       if (kDebugMode) {
         print('Exception in fetchAboutUs: $e');
       }
-      Get.snackbar("Error", "An unexpected error occurred");
+      Get.snackbar(S.of(Get.context!).error, S.of(Get.context!).unexpectedError);
     } finally {
       isLoading(false);
     }

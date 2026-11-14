@@ -1,3 +1,7 @@
+import 'package:get/get.dart';
+
+import '../generated/l10n.dart';
+
 /// UAE mobile number parsing and validation.
 ///
 /// Accepts: +971XXXXXXXXX, 971XXXXXXXXX, 0XXXXXXXXX, or XXXXXXXXX (9 digits).
@@ -63,22 +67,22 @@ class PhoneUtils {
   static String? validationError(String input) {
     final trimmed = input.trim();
     if (trimmed.isEmpty || trimmed == '+971' || trimmed == '971') {
-      return 'Please enter your Mobile Number';
+      return S.of(Get.context!).pleaseEnterMobileNumber;
     }
     final cleaned = _clean(input);
     if (!RegExp(r'^\+?\d+$').hasMatch(cleaned)) {
-      return 'Mobile number must contain only digits after +971';
+      return S.of(Get.context!).mobileDigitsOnly;
     }
 
     final subscriber = _subscriberDigits(cleaned);
     if (!RegExp(r'^\d*$').hasMatch(subscriber)) {
-      return 'Mobile number must contain only digits after +971';
+      return S.of(Get.context!).mobileDigitsOnly;
     }
     if (subscriber.length < subscriberLength) {
-      return 'Mobile number must be exactly 9 digits after +971';
+      return S.of(Get.context!).mobileExactly9Digits;
     }
     if (subscriber.length > subscriberLength) {
-      return 'Mobile number cannot be more than 9 digits after +971';
+      return S.of(Get.context!).mobileMax9Digits;
     }
     return null;
   }

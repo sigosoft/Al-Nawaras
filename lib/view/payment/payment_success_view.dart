@@ -56,58 +56,58 @@ class _PaymentSuccessViewState extends State<PaymentSuccessView> {
     final height = mediaQuery.size.height;
     final padding = width * 0.05;
 
-    String displayTitle = widget.title ?? S.of(context).monthlyMembership;
+    final s = S.of(context);
+    // Detail labels are built with the same localized strings (see
+    // BookParkingController), so match on those rather than English text.
+    String displayTitle = widget.title ?? s.monthlyMembership;
     final isParkingFlow =
-        widget.details?.any(
-          (d) => d['label']?.toLowerCase().contains('parking') ?? false,
-        ) ??
-        false;
+        widget.details?.any((d) => d['label'] == s.parkingType) ?? false;
 
     if (widget.details != null) {
       final membershipDetail = widget.details!.firstWhere(
-        (d) => d['label']?.toLowerCase().contains('membership') ?? false,
+        (d) => d['label'] == s.membershipType || d['label'] == s.membership,
         orElse: () => {},
       );
       if (membershipDetail.isNotEmpty) {
         final val = membershipDetail['value'] ?? '';
-        if (val.isNotEmpty && val.toLowerCase() != 'n/a') {
+        if (val.isNotEmpty &&
+            val.toLowerCase() != 'n/a' &&
+            val != s.notAvailableShort) {
           displayTitle = val.endsWith('Plan') || val.endsWith('Membership')
               ? val
-              : "$val Membership";
+              : s.membershipTitle(val);
         }
       }
     }
-    if (displayTitle.toLowerCase() == 'booking payment') {
-      displayTitle = S.of(context).monthlyMembership;
+    if (displayTitle == s.bookingPayment ||
+        displayTitle.toLowerCase() == 'booking payment') {
+      displayTitle = s.monthlyMembership;
     }
 
-    String displaySubtitle =
-        widget.subtitle ?? S.of(context).shadedParkingDetail;
+    String displaySubtitle = widget.subtitle ?? s.shadedParkingDetail;
     if (isParkingFlow) {
       if (displaySubtitle.toLowerCase().endsWith(' parking')) {
         displaySubtitle = displaySubtitle
             .substring(0, displaySubtitle.length - 8)
             .trim();
       }
-      if (!displaySubtitle.toLowerCase().contains('parking')) {
-        displaySubtitle = "$displaySubtitle Parking";
+      if (!displaySubtitle.toLowerCase().contains('parking') &&
+          !displaySubtitle.contains(s.parkingFallback)) {
+        displaySubtitle = s.parkingTypeSubtitle(displaySubtitle);
       }
     }
 
-    final displayTotal = widget.total ?? '${S.of(context).currency} 0.00';
+    final displayTotal = widget.total ?? '${s.currency} 0.00';
     final displayDetails = (widget.details != null)
         ? widget.details!.where((d) {
-            final label = (d['label'] ?? '')
-                .toString()
-                .toLowerCase()
-                .replaceAll(' ', '');
-            return label != 'membershiptype' && label != 'parkingtype';
+            final label = d['label'] ?? '';
+            return label != s.membershipType && label != s.parkingType;
           }).toList()
         : [
-            {'label': S.of(context).vehicle, 'value': 'N/A'},
-            {'label': S.of(context).duration, 'value': 'N/A'},
-            {'label': S.of(context).startDateLabel, 'value': 'N/A'},
-            {'label': S.of(context).endDateLabel, 'value': 'N/A'},
+            {'label': S.of(context).vehicle, 'value': S.of(context).notAvailableShort},
+            {'label': S.of(context).duration, 'value': S.of(context).notAvailableShort},
+            {'label': S.of(context).startDateLabel, 'value': S.of(context).notAvailableShort},
+            {'label': S.of(context).endDateLabel, 'value': S.of(context).notAvailableShort},
           ];
 
     return Scaffold(

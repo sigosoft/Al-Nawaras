@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import '../../controller/rewards_controller.dart';
 import '../widgets/custom_no_data.dart';
 import '../../generated/l10n.dart';
+import '../../utils/api_labels.dart';
+import '../terms_and_conditions/terms_and_conditions_view.dart';
 import 'package:share_plus/share_plus.dart';
 
 class RewardsView extends StatelessWidget {
@@ -37,9 +39,7 @@ class RewardsView extends StatelessWidget {
               elevation: 0,
               leading: IconButton(
                 icon: Icon(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? Icons.arrow_forward_ios
-                      : Icons.arrow_back_ios,
+                  Icons.arrow_back_ios,
                   color: Colors.white,
                 ),
                 onPressed: () => Navigator.pop(context),
@@ -72,7 +72,7 @@ class RewardsView extends StatelessWidget {
                           userName:
                               controller.profileData?['name'] ??
                               data['name'] ??
-                              'User',
+                              S.of(context).userFallback,
                           phoneNumber:
                               controller.profileData?['mobile'] ??
                               data['phone_number'] ??
@@ -98,7 +98,9 @@ class RewardsView extends StatelessWidget {
                                 .of(context)
                                 .pointsCount(data['points']?.toString() ?? '0'),
                             membershipType:
-                                data['membership_type'] ?? 'Silver Member',
+                                data['membership_type'] != null
+                                    ? ApiLabels.translate(S.of(context), data['membership_type'])
+                                    : S.of(context).silverMember,
                             memberSince: S
                                 .of(context)
                                 .memberSince(
@@ -199,7 +201,7 @@ class RewardsView extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Column(
           children: rules.map((r) {
-            String title = r['title'] ?? 'Title';
+            String title = r['title'] ?? S.of(Get.context!).titleFallback;
             return RewardsActionItem(
               icon: _getEarnIcon(title),
               title: title,
@@ -239,7 +241,7 @@ class RewardsView extends StatelessWidget {
           return Padding(
             padding: const EdgeInsetsDirectional.only(end: 12.0),
             child: _buildRedeemCard(
-              r['title']?.toString().replaceAll(' ', '\n') ?? 'Reward',
+              r['title']?.toString().replaceAll(' ', '\n') ?? S.of(Get.context!).rewardFallback,
               '${r['points'] ?? 0} ${S.of(Get.context!).pts}',
               width,
             ),
@@ -369,7 +371,7 @@ class RewardsView extends StatelessWidget {
       width: double.infinity,
       height: width * 0.12,
       child: OutlinedButton(
-        onPressed: () {},
+        onPressed: () => Get.to(() => const TermsAndConditionsView()),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(0xFFFFCDD2), width: 2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

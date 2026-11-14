@@ -46,9 +46,7 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
             elevation: 0,
             leading: IconButton(
               icon: Icon(
-                Directionality.of(context) == TextDirection.rtl
-                    ? Icons.arrow_forward_ios
-                    : Icons.arrow_back_ios,
+                Icons.arrow_back_ios,
                 color: Colors.white,
                 size: 20,
               ),
@@ -172,9 +170,9 @@ class _BookingHistoryViewState extends State<BookingHistoryView> {
         (item) => Column(
           children: [
             BookingCard(
-              title: item['title'] ?? 'Parking',
+              title: item['title'] ?? S.of(context).parkingFallback,
               subtitle: item['subtitle'] ?? '',
-              status: item['status'] ?? 'N/A',
+              status: item['status'] ?? S.of(context).notAvailableShort,
               startDate: item['startDate'] ?? '',
               endDate: item['endDate'] ?? '',
               amount: item['amount'] ?? 'AED 0.00',

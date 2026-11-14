@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
 
@@ -53,8 +54,8 @@ class HelpSupportController extends GetxController {
         supportPhone.value = supportData['support_phone'] ?? "";
       } else {
         Get.snackbar(
-          "Error", 
-          data['message'] ?? "Failed to fetch support details",
+          S.of(Get.context!).error,
+          data['message'] ?? S.of(Get.context!).failedToFetchSupportDetails,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,

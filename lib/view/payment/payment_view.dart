@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import '../../generated/l10n.dart';
 import '../widgets/payment_summary_card.dart';
 import '../widgets/payment_method_item.dart';
-import '../widgets/credit_card_form.dart';
 import '../widgets/custom_logos.dart';
 import '../widgets/draggable_help_button.dart';
 import '../../controller/paymob_controller.dart';
@@ -62,9 +61,7 @@ class _PaymentViewState extends State<PaymentView> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(
-            Directionality.of(context) == TextDirection.rtl
-                ? Icons.arrow_forward_ios
-                : Icons.arrow_back_ios,
+            Icons.arrow_back_ios,
             color: Colors.white,
             size: 20,
           ),
@@ -163,7 +160,23 @@ class _PaymentViewState extends State<PaymentView> {
           trailing: CustomLogos.buildMastercard(),
           isSelected: selectedPaymentMethod == 0,
           isExpanded: selectedPaymentMethod == 0,
-          expandedContent: CreditCardForm(width: width, height: height),
+          // Card details are entered on Paymob's secure page (opened on
+          // Pay), so no card fields are collected in the app.
+          expandedContent: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+            child: Row(
+              children: [
+                const Icon(Icons.lock_outline, size: 18, color: Colors.grey),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    S.of(context).cardDetailsOnSecurePage,
+                    style: const TextStyle(fontSize: 12.5, color: Colors.black54),
+                  ),
+                ),
+              ],
+            ),
+          ),
           width: width,
           onTap: () => setState(() => selectedPaymentMethod = 0),
         ),
@@ -280,7 +293,12 @@ class _PaymentViewState extends State<PaymentView> {
                 if (selectedPaymentMethod == 0) {
                   // NEW Paymob Flow managed by backend
                   if (widget.bookingId == null) {
-                    Get.snackbar('Error', 'Invalid booking information.');
+                    // Memberships and standalone services have no booking
+                    // to pay against yet (no purchase endpoint in the API).
+                    Get.snackbar(
+                      S.of(context).error,
+                      S.of(context).onlinePaymentNotAvailable,
+                    );
                     return;
                   }
 
@@ -329,8 +347,8 @@ class _PaymentViewState extends State<PaymentView> {
                 } else {
                   // Other payment methods
                   Get.snackbar(
-                    'Information',
-                    'Payment method not implemented yet.',
+                    S.of(context).information,
+                    S.of(context).paymentMethodNotImplemented,
                     backgroundColor: Colors.grey[800],
                     colorText: Colors.white,
                     snackPosition: SnackPosition.BOTTOM,
@@ -406,8 +424,8 @@ class _PaymentViewState extends State<PaymentView> {
 
     if (result == PaymobPaymentResult.failed) {
       Get.snackbar(
-        'Payment Failed',
-        'Payment was declined or failed. Please try again.',
+        S.of(context).paymentFailed,
+        S.of(context).paymentDeclined,
         backgroundColor: const Color(0xFFE30613),
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -416,8 +434,8 @@ class _PaymentViewState extends State<PaymentView> {
     }
 
     Get.snackbar(
-      'Payment Status',
-      'Payment is still being confirmed. Please check Bookings in a moment.',
+      S.of(context).paymentStatus,
+      S.of(context).paymentStillConfirming,
       backgroundColor: Colors.orange[800],
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,

@@ -73,7 +73,7 @@ class ProfileView extends StatelessWidget {
                                 width: width,
                                 status:
                                     homeController.membershipStatus !=
-                                        "Loading..."
+                                        HomeController.loadingPlaceholder
                                     ? homeController.membershipStatus
                                     : (profileController
                                               .profile

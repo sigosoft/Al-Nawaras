@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../config/api_constants.dart';
@@ -58,8 +59,8 @@ class LoginController extends GetxController {
     // Validation
     if (rawLogin.isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your Username or Mobile',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterUsernameOrMobile,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -71,8 +72,8 @@ class LoginController extends GetxController {
     if (!rawLogin.contains('@')) {
       if (!PhoneUtils.isValidUaeMobile(rawLogin)) {
         Get.snackbar(
-          'Error',
-          'Enter a valid UAE mobile (+971 XX XXX XXXX) or Email',
+          S.of(Get.context!).error,
+          S.of(Get.context!).enterValidMobileOrEmail,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -83,8 +84,8 @@ class LoginController extends GetxController {
     }
     if (password.isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your Password',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterPassword,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -144,11 +145,11 @@ class LoginController extends GetxController {
             box.remove('login_password');
           }
 
-          final String loginMessage = data['message'] ?? 'Login successful';
+          final String loginMessage = data['message'] ?? S.of(Get.context!).loginSuccessful;
 
           Get.offAll(() => const HomeScreen());
           Get.snackbar(
-            'Success',
+            S.of(Get.context!).success,
             loginMessage,
             backgroundColor: Colors.green,
             colorText: Colors.white,
@@ -157,12 +158,12 @@ class LoginController extends GetxController {
           );
         } else {
           final message =
-              data['message'] ?? 'Login failed. Please check your credentials.';
+              data['message'] ?? S.of(Get.context!).loginFailedCheckCredentials;
           if (kDebugMode) {
             print('Login failure from API: $message');
           }
           Get.snackbar(
-            'Error',
+            S.of(Get.context!).error,
             message,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -177,8 +178,8 @@ class LoginController extends GetxController {
         print('Exception caught: $e');
       }
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred.',
+        S.of(Get.context!).error,
+        S.of(Get.context!).unexpectedError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -216,15 +217,16 @@ class LoginController extends GetxController {
 
       if (idToken == null) {
         Get.snackbar(
-          "Error",
-          "Failed to get Google token",
+          S.of(Get.context!).error,
+          S.of(Get.context!).failedToGetGoogleToken,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
         return;
       }
-      print("ID TOKEN: $idToken");
+      // Don't print the raw Google token to the device log.
+      debugPrint("Google ID token received (${idToken.length} chars)");
 
       // 🔹 Step 3: Call API
       final response = await dio.post(
@@ -232,6 +234,8 @@ class LoginController extends GetxController {
         options: Options(contentType: Headers.formUrlEncodedContentType),
         data: {
           "provider": "google",
+          // Docs: id_token. auth_token kept for backends that still read it.
+          "id_token": idToken,
           "auth_token": idToken,
           "email": user.email,
         },
@@ -247,12 +251,12 @@ class LoginController extends GetxController {
         box.write("name", data["data"]["name"]);
         box.write("email", data["data"]["email"]);
 
-        final String successMessage = data["message"] ?? "Login successful";
+        final String successMessage = data["message"] ?? S.of(Get.context!).loginSuccessful;
 
         // 🔹 Step 5: Navigate then show snackbar on destination screen
         Get.offAll(() => const HomeScreen());
         Get.snackbar(
-          "Success",
+          S.of(Get.context!).success,
           successMessage,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -261,7 +265,7 @@ class LoginController extends GetxController {
         );
       } else {
         Get.snackbar(
-          "Error",
+          S.of(Get.context!).error,
           data["message"],
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
@@ -272,7 +276,7 @@ class LoginController extends GetxController {
       BaseClient.handleDioError(e);
     } catch (e) {
       print("Error: $e");
-      Get.snackbar("Error", e.toString());
+      Get.snackbar(S.of(Get.context!).error, e.toString());
     } finally {
       isLoading = false;
       if (!isClosed) update();
@@ -281,8 +285,8 @@ class LoginController extends GetxController {
 
   Future<void> signInWithFacebook() async {
     Get.snackbar(
-      "Coming Soon",
-      "Facebook login will be available in the next update",
+      S.of(Get.context!).comingSoon,
+      S.of(Get.context!).facebookLoginComingSoon,
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.blueAccent,
       colorText: Colors.white,

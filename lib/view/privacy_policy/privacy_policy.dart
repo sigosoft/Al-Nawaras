@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../controller/privacy_policy_controller.dart';
+import '../../generated/l10n.dart';
 
 class PrivacyPolicyView extends StatelessWidget {
   const PrivacyPolicyView({super.key});
@@ -14,7 +15,7 @@ class PrivacyPolicyView extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          'Privacy Policy',
+          S.of(context).privacyPolicy,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: const Color(0xFFE30613), // App Red
@@ -29,10 +30,10 @@ class PrivacyPolicyView extends StatelessWidget {
         }
 
         if (controller.privacyPolicyContent.value.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              "Privacy policy not available.",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              S.of(context).privacyPolicyNotAvailable,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
           );
         }

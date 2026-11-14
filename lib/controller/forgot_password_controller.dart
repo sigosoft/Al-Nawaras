@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
 import '../utils/phone_utils.dart';
@@ -48,8 +49,8 @@ class ForgotPasswordController extends GetxController {
   void sendOtp() {
     if (userOrMobileController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your Email or Mobile Number',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterEmailOrMobile,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -58,8 +59,8 @@ class ForgotPasswordController extends GetxController {
     }
     if (newPasswordController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please enter your New Password',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseEnterNewPassword,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -68,8 +69,8 @@ class ForgotPasswordController extends GetxController {
     }
     if (newPasswordController.text.length < 6) {
       Get.snackbar(
-        'Error',
-        'Password must be at least 6 characters long',
+        S.of(Get.context!).error,
+        S.of(Get.context!).passwordMinLength,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -78,8 +79,8 @@ class ForgotPasswordController extends GetxController {
     }
     if (confirmPasswordController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error',
-        'Please confirm your Password',
+        S.of(Get.context!).error,
+        S.of(Get.context!).pleaseConfirmPassword,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -88,8 +89,8 @@ class ForgotPasswordController extends GetxController {
     }
     if (newPasswordController.text != confirmPasswordController.text) {
       Get.snackbar(
-        'Error',
-        'Passwords do not match',
+        S.of(Get.context!).error,
+        S.of(Get.context!).passwordsDoNotMatch,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -126,7 +127,7 @@ class ForgotPasswordController extends GetxController {
 
       if (response.statusCode == 200 && response.data != null) {
         final Map<String, dynamic> data = response.data;
-        final message = data['message'] ?? 'OTP sent successfully';
+        final message = data['message'] ?? S.of(Get.context!).otpSentSuccessfully;
 
         if (data['status'] == true) {
           if (kDebugMode) {
@@ -135,7 +136,7 @@ class ForgotPasswordController extends GetxController {
           isOtpSent = true;
           if (!isClosed) update();
           Get.snackbar(
-            'Success',
+            S.of(Get.context!).success,
             message,
             backgroundColor: Colors.green,
             colorText: Colors.white,
@@ -146,7 +147,7 @@ class ForgotPasswordController extends GetxController {
             print('Send OTP failed: $message');
           }
           Get.snackbar(
-            'Error',
+            S.of(Get.context!).error,
             message,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -161,14 +162,14 @@ class ForgotPasswordController extends GetxController {
           print('Response Error Data: ${e.response?.data}');
         }
       }
-      String errorMessage = 'A network error occurred. Please try again.';
+      String errorMessage = S.of(Get.context!).networkErrorTryAgain;
       if (e.response != null &&
           e.response?.data != null &&
           e.response?.data is Map) {
         errorMessage = e.response?.data['message'] ?? errorMessage;
       }
       Get.snackbar(
-        'Error',
+        S.of(Get.context!).error,
         errorMessage,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -179,8 +180,8 @@ class ForgotPasswordController extends GetxController {
         print('Exception caught (send_otp): $e');
       }
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred.',
+        S.of(Get.context!).error,
+        S.of(Get.context!).unexpectedError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -194,8 +195,8 @@ class ForgotPasswordController extends GetxController {
   void verifyOtp() {
     if (otpValue.length < 6) {
       Get.snackbar(
-        'Error',
-        'Please enter the complete 6-digit OTP',
+        S.of(Get.context!).error,
+        S.of(Get.context!).enterComplete6DigitOtp,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -239,14 +240,14 @@ class ForgotPasswordController extends GetxController {
 
       if (response.statusCode == 200 && response.data != null) {
         final Map<String, dynamic> data = response.data;
-        final message = data['message'] ?? 'Password reset successful';
+        final message = data['message'] ?? S.of(Get.context!).passwordResetSuccessful;
 
         if (data['status'] == true) {
           if (kDebugMode) {
             print('OTP verified: $message');
           }
           Get.snackbar(
-            'Success',
+            S.of(Get.context!).success,
             message,
             backgroundColor: Colors.green,
             colorText: Colors.white,
@@ -260,7 +261,7 @@ class ForgotPasswordController extends GetxController {
             print('Verify OTP failed: $message');
           }
           Get.snackbar(
-            'Error',
+            S.of(Get.context!).error,
             message,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -275,14 +276,14 @@ class ForgotPasswordController extends GetxController {
           print('Response Error Data: ${e.response?.data}');
         }
       }
-      String errorMessage = 'A network error occurred. Please try again.';
+      String errorMessage = S.of(Get.context!).networkErrorTryAgain;
       if (e.response != null &&
           e.response?.data != null &&
           e.response?.data is Map) {
         errorMessage = e.response?.data['message'] ?? errorMessage;
       }
       Get.snackbar(
-        'Error',
+        S.of(Get.context!).error,
         errorMessage,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -293,8 +294,8 @@ class ForgotPasswordController extends GetxController {
         print('Exception caught (verify_otp): $e');
       }
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred.',
+        S.of(Get.context!).error,
+        S.of(Get.context!).unexpectedError,
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,

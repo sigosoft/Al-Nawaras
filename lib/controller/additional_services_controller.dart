@@ -46,8 +46,14 @@ class AdditionalServicesController extends GetxController {
 
       if (response.statusCode == 200 && response.data != null) {
         if (response.data['status'] == true) {
-          final List<dynamic> servicesData =
-              response.data['data']['services'] ?? [];
+          // Docs: data is a list. Older responses wrapped it in
+          // data.services, and an empty result comes back as {}.
+          final rawData = response.data['data'];
+          final List<dynamic> servicesData = rawData is List
+              ? rawData
+              : (rawData is Map && rawData['services'] is List
+                    ? rawData['services'] as List
+                    : const []);
 
           services.value = servicesData.map((s) {
             String title = s['service_name'] ?? S.of(Get.context!).service;
@@ -88,123 +94,11 @@ class AdditionalServicesController extends GetxController {
     return 'lib/assets/images/battery.png'; // Default
   }
 
-  Future<void> onBuyNowClick(int index) async {
-    final service = services[index];
-
-    // As per user request, call payment/summary with booking_id=1
-    try {
-      final dio = BaseClient.dio;
-      final storage = GetStorage();
-      final token = storage.read('token');
-      final headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      };
-
-      debugPrint('\n--- API REQUEST (payment/summary) ---');
-      debugPrint('URL: ${ApiConstants.paymentSummary}?booking_id=1');
-
-      final response = await dio.get(
-        ApiConstants.paymentSummary,
-        queryParameters: {'booking_id': 1},
-        options: Options(headers: headers),
-      );
-
-      debugPrint('--- API RESPONSE (payment/summary) ---');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Data: ${response.data}');
-
-      if (response.statusCode == 200 &&
-          response.data != null &&
-          response.data['status'] == true) {
-        final data = response.data['data'];
-        final currency = data['currency'] ?? 'AED';
-
-        Get.to(
-          () => PaymentView(
-            title: service['title'],
-            subtitle: S.of(Get.context!).additionalService,
-            amount: '$currency ${data['total']}',
-            subtotal: '$currency ${data['subtotal']}',
-            vat: '$currency ${data['vat']}',
-            total: '$currency ${data['total']}',
-            details: [
-              {
-                'label': S.of(Get.context!).serviceName,
-                'value': service['title'],
-              },
-              {
-                'label': S.of(Get.context!).membershipPackage,
-                'value': data['membership_type']?.toString() ?? 'N/A',
-              },
-              {
-                'label': S.of(Get.context!).vehicleLabel,
-                'value': () {
-                  final rawVehicle = data['vehicle']?.toString() ?? 'N/A';
-                  final match = RegExp(r'\(([^)]+)\)').firstMatch(rawVehicle);
-                  if (match != null) {
-                    final modelStr = match.group(1)!.trim();
-                    if (modelStr.toLowerCase() != 'false' && modelStr.toLowerCase() != 'null') {
-                      return modelStr;
-                    }
-                  }
-                  final cleaned = rawVehicle.replaceAll(RegExp(r'\s*\(?False\)?', caseSensitive: false), '').trim();
-                  return cleaned.isEmpty ? 'N/A' : cleaned;
-                }(),
-              },
-              {
-                'label': S.of(Get.context!).startDateLabel,
-                'value': data['start_date']?.toString() ?? 'N/A',
-              },
-              {
-                'label': S.of(Get.context!).endDateLabel,
-                'value': data['end_date']?.toString() ?? 'N/A',
-              },
-              {
-                'label': S.of(Get.context!).duration,
-                'value': () {
-                  final rawDuration = data['duration'];
-                  if (rawDuration != null &&
-                      rawDuration != false &&
-                      rawDuration != 'false' &&
-                      rawDuration.toString().isNotEmpty &&
-                      rawDuration.toString().toLowerCase() != 'n/a') {
-                    return rawDuration.toString();
-                  }
-                  try {
-                    final startStr = data['start_date']?.toString();
-                    final endStr = data['end_date']?.toString();
-                    if (startStr != null && endStr != null) {
-                      final startDt = DateTime.tryParse(startStr);
-                      final endDt = DateTime.tryParse(endStr);
-                      if (startDt != null && endDt != null) {
-                        final diff = endDt.difference(startDt);
-                        final days = diff.inDays;
-                        final hours = diff.inHours;
-                        if (days > 0) {
-                          return "$days ${days == 1 ? 'Day' : 'Days'}";
-                        } else if (hours > 0) {
-                          return "$hours ${hours == 1 ? 'Hour' : 'Hours'}";
-                        } else {
-                          final minutes = diff.inMinutes;
-                          return "$minutes ${minutes == 1 ? 'Minute' : 'Minutes'}";
-                        }
-                      }
-                    }
-                  } catch (_) {}
-                  return 'N/A';
-                }(),
-              },
-            ],
-          ),
-        );
-      } else {
-        _navigateToDefaultPayment(service);
-      }
-    } catch (e) {
-      debugPrint('Error fetching payment summary: $e');
-      _navigateToDefaultPayment(service);
-    }
+  void onBuyNowClick(int index) {
+    // There is no standalone service-purchase endpoint yet, so show the
+    // service's own price. (Previously this loaded payment/summary for
+    // booking_id=1, which displayed another customer's booking.)
+    _navigateToDefaultPayment(services[index]);
   }
 
   void _navigateToDefaultPayment(Map<String, dynamic> service) {

@@ -45,19 +45,27 @@ class DraggableHelpButton extends StatelessWidget {
       init: DraggableHelpController(),
       builder: (controller) {
         // Initial position if not set
-        double currentTop = controller.helpBtnTop ?? height * 0.42;
+        // Default to the lower-right corner (above bottom bars) so it doesn't
+        // cover buttons in the middle of the screen; users can still drag it.
+        double currentTop = controller.helpBtnTop ?? height * 0.68;
         double currentRight = controller.helpBtnRight ?? 20.0;
 
-        return Positioned(
+        // Pinned to the "end" side: right in English, left in Arabic, so it
+        // sits away from the start-aligned buttons in both layouts.
+        final isRtl = Directionality.of(context) == TextDirection.rtl;
+        return PositionedDirectional(
           top: currentTop,
-          right: currentRight,
+          end: currentRight,
           child: GestureDetector(
             onTap: () {
               Get.to(() => const CustomerSupportView());
             },
             onPanUpdate: (details) {
               double newTop = currentTop + details.delta.dy;
-              double newRight = currentRight - details.delta.dx;
+              // "end" offset grows when dragging toward the start side.
+              double newRight = isRtl
+                  ? currentRight + details.delta.dx
+                  : currentRight - details.delta.dx;
 
               // Bound checking to keep it within screen
               if (newTop > 0 && newTop < height - 100) {

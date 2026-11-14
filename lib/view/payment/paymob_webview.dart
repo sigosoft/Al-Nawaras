@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../generated/l10n.dart';
+
 /// Result returned when the Paymob WebView closes.
 enum PaymobPaymentResult {
   /// Gateway callback clearly indicates a successful payment.
@@ -185,7 +187,7 @@ class _PaymobWebViewState extends State<PaymobWebView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Secure Payment'),
+        title: Text(S.of(context).securePayment),
         backgroundColor: const Color(0xFFE30613),
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),

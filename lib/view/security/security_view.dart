@@ -1,6 +1,7 @@
 import 'package:al_nawaras/view/login/forgot_password_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../generated/l10n.dart';
 
 class SecurityView extends StatelessWidget {
   const SecurityView({super.key});
@@ -16,9 +17,9 @@ class SecurityView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Security',
-          style: TextStyle(
+        title: Text(
+          S.of(context).security,
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -33,7 +34,7 @@ class SecurityView extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
             Text(
-              'Manage your account security',
+              S.of(context).manageAccountSecurity,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 14,
@@ -59,7 +60,7 @@ class SecurityView extends StatelessWidget {
                 children: [
                   _buildSecurityOption(
                     icon: Icons.lock_outline,
-                    title: 'Change Password',
+                    title: S.of(context).changePassword,
                     onTap: () {
                       Get.to(() => const ForgotPasswordView());
                     },
@@ -67,13 +68,13 @@ class SecurityView extends StatelessWidget {
                   const Divider(height: 1, indent: 50, endIndent: 16),
                   _buildSecurityOption(
                     icon: Icons.fingerprint,
-                    title: 'Enable Biometrics Login',
+                    title: S.of(context).enableBiometricsLogin,
                     trailing: Switch(
                       value: false, // Default false for now
                       onChanged: (val) {
                         Get.snackbar(
-                          'Coming Soon',
-                          'Biometrics functionality will be available in the next update.',
+                          S.of(context).comingSoon,
+                          S.of(context).biometricsComingSoon,
                           snackPosition: SnackPosition.BOTTOM,
                         );
                       },
@@ -84,18 +85,18 @@ class SecurityView extends StatelessWidget {
                   const Divider(height: 1, indent: 50, endIndent: 16),
                   _buildSecurityOption(
                     icon: Icons.verified_user_outlined,
-                    title: 'Two-Step Verification',
-                    trailing: const Text(
-                      'Off',
-                      style: TextStyle(
+                    title: S.of(context).twoStepVerification,
+                    trailing: Text(
+                      S.of(context).offStatus,
+                      style: const TextStyle(
                         color: Colors.grey,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     onTap: () {
                       Get.snackbar(
-                        'Coming Soon',
-                        'Two-Step verification will be available in the next update.',
+                        S.of(context).comingSoon,
+                        S.of(context).twoStepComingSoon,
                         snackPosition: SnackPosition.BOTTOM,
                       );
                     },

@@ -33,9 +33,7 @@ class LoginScreen extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         alignment: AlignmentDirectional.centerStart,
                         icon: Icon(
-                          Directionality.of(context) == TextDirection.rtl
-                              ? Icons.arrow_forward_ios
-                              : Icons.arrow_back_ios_new,
+                          Icons.arrow_back_ios,
                           color: const Color(0xFF001133),
                           size: 24,
                         ),

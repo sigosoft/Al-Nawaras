@@ -73,7 +73,7 @@ class ApiConstants {
   static String get notifications => '${baseUrl}notifications';
   static String get readNotification => '${baseUrl}notifications/read';
   static String get search => '${baseUrl}search';
-  static String get lookup => '${baseUrl}lookup';
+  static String get vehicleLookup => '${baseUrl}vehicles/lookup';
 
   // App Settings (Paymob Configuration)
   static String get appSettings => '${baseUrl}settings';

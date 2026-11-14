@@ -303,7 +303,7 @@ class BookParkingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    S.of(context).license(v['license_number'] ?? 'N/A'),
+                    S.of(context).license(v['license_number'] ?? S.of(context).notAvailableShort),
                     style: const TextStyle(fontSize: 12, color: Colors.black45),
                   ),
                 ],
@@ -482,9 +482,9 @@ class BookParkingScreen extends StatelessWidget {
             color: Colors.grey.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 12),
-          const Text(
-            "Choose date and time for selecting the slot",
-            style: TextStyle(
+          Text(
+            S.of(context).chooseDateTimeForSlot,
+            style: const TextStyle(
               color: Colors.black45,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -926,9 +926,9 @@ class BookParkingScreen extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Text(
-          "No membership packages available",
-          style: TextStyle(color: Colors.black45, fontSize: 12),
+        child: Text(
+          S.of(context).noMembershipPackages,
+          style: const TextStyle(color: Colors.black45, fontSize: 12),
         ),
       );
     }
@@ -1072,11 +1072,7 @@ class BookParkingScreen extends StatelessWidget {
                         ),
                         children: [
                           TextSpan(
-                            text:
-                                Localizations.localeOf(context).languageCode ==
-                                    'ar'
-                                ? 'أوافق على '
-                                : 'I agree to the ',
+                            text: S.of(context).iAgreeToThe,
                           ),
                           WidgetSpan(
                             alignment: PlaceholderAlignment.middle,

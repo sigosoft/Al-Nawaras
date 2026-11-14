@@ -134,6 +134,22 @@ class HomeScreen extends StatelessWidget {
                           SizedBox(height: height * 0.02),
                           _buildSearchBar(controller, context, height, width),
 
+                          if (controller.searchQuery.isNotEmpty &&
+                              controller.searchLocationsResults.isEmpty &&
+                              controller.filteredVehicles.isEmpty &&
+                              controller.filteredActivities.isEmpty) ...[
+                            SizedBox(height: height * 0.015),
+                            Text(
+                              S.of(context).noSearchResults,
+                              // Sits on the red header once sections hide.
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+
                           // Search Results for Locations from API
                           if (controller.searchQuery.isNotEmpty &&
                               controller.searchLocationsResults.isNotEmpty) ...[
@@ -362,7 +378,9 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                controller.userName,
+                controller.userName == HomeController.loadingPlaceholder
+                    ? S.of(context).loading
+                    : controller.userName,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
@@ -446,12 +464,16 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  controller.membershipStatus,
+                  controller.membershipStatus == HomeController.loadingPlaceholder
+                      ? S.of(context).loading
+                      : controller.membershipStatus,
                   style: const TextStyle(fontSize: 11, color: Colors.black54),
                 ),
                 SizedBox(height: height * 0.005),
                 Text(
-                  controller.membershipTier,
+                  controller.membershipTier == HomeController.loadingPlaceholder
+                      ? S.of(context).loading
+                      : controller.membershipTier,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -727,6 +749,8 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       child: TextField(
+        key: controller.searchFieldKey,
+        focusNode: controller.searchFocusNode,
         controller: controller.searchController,
         onChanged: controller.onSearchChanged,
         onTap: () =>

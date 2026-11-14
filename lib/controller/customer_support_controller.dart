@@ -7,6 +7,7 @@ import 'package:get/get.dart' hide FormData;
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import '../config/api_constants.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 
 class ChatController extends GetxController {
@@ -124,7 +125,7 @@ class ChatController extends GetxController {
     return {
       'isMe': isMe,
       'text': m['message'] ?? '',
-      'sender': isMe ? "Me" : "Support",
+      'sender': isMe ? S.of(Get.context!).meLabel : S.of(Get.context!).supportLabel,
       'id': m['id'],
       'time': m['created_at'] ?? m['date'] ?? m['timestamp'] ?? '',
       'is_read': m['is_read'] ?? true,
@@ -304,7 +305,7 @@ class ChatController extends GetxController {
       messages.insert(0, {
         'isMe': true,
         'text': text,
-        'sender': 'Me',
+        'sender': S.of(Get.context!).meLabel,
         'id': null, // Marks it as optimistic
         'time': DateTime.now().toUtc().toIso8601String(),
         'is_read': true,
@@ -327,8 +328,8 @@ class ChatController extends GetxController {
         // If failed, remove optimistic message
         messages.removeWhere((m) => m['id'] == null && m['text'] == text);
         Get.snackbar(
-          "Error",
-          data['message'] ?? "Failed to send message",
+          S.of(Get.context!).error,
+          data['message'] ?? S.of(Get.context!).failedToSendMessage,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -374,7 +375,7 @@ class ChatController extends GetxController {
         'isMe': true,
         'text': '', // or '[Image]' if we don't render it
         'image': base64Image,
-        'sender': 'Me',
+        'sender': S.of(Get.context!).meLabel,
         'id': null,
         'time': DateTime.now().toUtc().toIso8601String(),
         'is_read': true,
@@ -403,8 +404,8 @@ class ChatController extends GetxController {
       if (data != null && data['status'] != true) {
         messages.removeWhere((m) => m['id'] == null && m['image'] == base64Image);
         Get.snackbar(
-          "Error",
-          data['message'] ?? "Failed to send image",
+          S.of(Get.context!).error,
+          data['message'] ?? S.of(Get.context!).failedToSendImage,
           backgroundColor: Colors.red,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,

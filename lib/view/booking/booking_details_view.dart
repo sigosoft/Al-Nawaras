@@ -54,7 +54,7 @@ class BookingDetailsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    booking['reference'] ?? 'N/A',
+                    booking['reference'] ?? S.of(context).notAvailableShort,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -79,8 +79,8 @@ class BookingDetailsView extends StatelessWidget {
                       _buildDetailRow(
                         context,
                         Icons.category_outlined,
-                        S.of(context).parkingType,
-                        booking['title'] ?? 'N/A',
+                        S.of(context).membershipPackage,
+                        booking['title'] ?? S.of(context).notAvailableShort,
                       ),
                       const Divider(height: 32),
                       _buildDetailRow(
@@ -88,28 +88,37 @@ class BookingDetailsView extends StatelessWidget {
                         Icons.directions_car_outlined,
                         S.of(context).vehicle,
                         booking['subtitle']?.toString().split(' • ').first ??
-                            'N/A',
+                            S.of(context).notAvailableShort,
                       ),
                       const SizedBox(height: 8),
                       _buildDetailRow(
                         context,
                         Icons.info_outline,
-                        'Vehicle Type',
-                        booking['vehicle_type'] ?? 'N/A',
+                        S.of(context).vehicleType,
+                        booking['vehicle_type'] ?? S.of(context).notAvailableShort,
                       ),
                       const Divider(height: 32),
                       _buildDetailRow(
                         context,
                         Icons.location_on_outlined,
                         S.of(context).locationLabel,
-                        booking['location'] ?? 'N/A',
+                        booking['location'] ?? S.of(context).notAvailableShort,
                       ),
+                      if ((booking['slot'] ?? '').toString().isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        _buildDetailRow(
+                          context,
+                          Icons.local_parking_outlined,
+                          S.of(context).slotNumberLabel,
+                          booking['slot'].toString(),
+                        ),
+                      ],
                       const Divider(height: 32),
                       _buildDetailRow(
                         context,
                         Icons.check_circle_outline,
-                        'Status',
-                        booking['status'] ?? 'N/A',
+                        S.of(context).status,
+                        booking['status'] ?? S.of(context).notAvailableShort,
                         valueColor: booking['isActive'] == true
                             ? Colors.green.shade700
                             : Colors.orange.shade700,
@@ -122,7 +131,7 @@ class BookingDetailsView extends StatelessWidget {
                               context,
                               Icons.login,
                               S.of(context).startDateLabel,
-                              booking['startDate'] ?? 'N/A',
+                              booking['startDate'] ?? S.of(context).notAvailableShort,
                             ),
                           ),
                           Expanded(
@@ -130,7 +139,7 @@ class BookingDetailsView extends StatelessWidget {
                               context,
                               Icons.logout,
                               S.of(context).endDateLabel,
-                              booking['endDate'] ?? 'N/A',
+                              booking['endDate'] ?? S.of(context).notAvailableShort,
                             ),
                           ),
                         ],
@@ -139,8 +148,8 @@ class BookingDetailsView extends StatelessWidget {
                       _buildDetailRow(
                         context,
                         Icons.account_balance_wallet_outlined,
-                        S.of(context).amountLabel,
-                        booking['amount'] ?? 'N/A',
+                        S.of(context).amountExclVat,
+                        booking['amount'] ?? S.of(context).notAvailableShort,
                       ),
                       if (booking['extra_amount'] != null &&
                           (booking['extra_amount'] as num) > 0) ...[
@@ -148,7 +157,7 @@ class BookingDetailsView extends StatelessWidget {
                         _buildDetailRow(
                           context,
                           Icons.add_circle_outline,
-                          'Extra Amount',
+                          S.of(context).extraAmount,
                           'AED ${booking['extra_amount']}',
                         ),
                       ],

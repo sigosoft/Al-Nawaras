@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
 
@@ -51,8 +52,8 @@ class PrivacyPolicyController extends GetxController {
         privacyPolicyContent.value = policyData['privacy_policy'] ?? "";
       } else {
         Get.snackbar(
-          "Error", 
-          data['message'] ?? "Failed to fetch Privacy Policy",
+          S.of(Get.context!).error,
+          data['message'] ?? S.of(Get.context!).failedToFetchPrivacyPolicy,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,

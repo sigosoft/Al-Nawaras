@@ -22,6 +22,8 @@ class SlotSizeUtils {
       r'^\s*([\d.,]+)\s*(?:m|م)?\s*[xX×]\s*([\d.,]+)\s*(?:m|م)?\s*$',
     ).firstMatch(size);
     if (match == null) return size.trim();
-    return '${match.group(1)} X ${match.group(2)}';
+    // Wrapped in a left-to-right isolate (U+2066 … U+2069) so Arabic
+    // right-to-left layout doesn't reorder it to "X 4 4.6".
+    return '\u2066${match.group(1)} X ${match.group(2)}\u2069';
   }
 }

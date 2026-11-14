@@ -606,5 +606,439 @@
   "service": "Service",
   "@service": {},
   "noDescriptionAvailable": "No description available.",
-  "@noDescriptionAvailable": {}
+  "@noDescriptionAvailable": {},
+  "error": "Error",
+  "@error": {},
+  "onlinePaymentNotAvailable": "Online payment for this item is not available yet. Please contact support.",
+  "@onlinePaymentNotAvailable": {},
+  "noActiveBooking": "No active booking found",
+  "@noActiveBooking": {},
+  "vehicleType": "Vehicle Type",
+  "@vehicleType": {},
+  "status": "Status",
+  "@status": {},
+  "activePartner": "Active Partner",
+  "@activePartner": {},
+  "noSearchResults": "No matching locations, vehicles or bookings",
+  "@noSearchResults": {},
+  "amountExclVat": "Amount (excl. VAT)",
+  "@amountExclVat": {},
+  "cardDetailsOnSecurePage": "You will enter your card details on the secure Paymob payment page after tapping Pay.",
+  "@cardDetailsOnSecurePage": {},
+  "couldNotOpenLink": "Could not open link",
+  "@couldNotOpenLink": {},
+  "linkIsEmpty": "Link is empty",
+  "@linkIsEmpty": {},
+  "failedToFetchAboutUs": "Failed to fetch About Us link",
+  "@failedToFetchAboutUs": {},
+  "unexpectedError": "An unexpected error occurred.",
+  "@unexpectedError": {},
+  "notice": "Notice",
+  "@notice": {},
+  "unableToFetchAvailability": "Unable to fetch availability",
+  "@unableToFetchAvailability": {},
+  "unableToCheckSlotAvailability": "Unable to check slot availability",
+  "@unableToCheckSlotAvailability": {},
+  "noSlotsAvailable": "No Slots Available",
+  "@noSlotsAvailable": {},
+  "noUnitsForDuration": "No units available for the selected {membership} duration. Try another date or parking type.",
+  "@noUnitsForDuration": {
+    "placeholders": {
+      "membership": {
+        "type": "String"
+      }
+    }
+  },
+  "selectionRequired": "Selection Required",
+  "@selectionRequired": {},
+  "selectVehicleBeforeProceeding": "Please select a vehicle before proceeding.",
+  "@selectVehicleBeforeProceeding": {},
+  "selectStartAndEndDateTime": "Please select both start and end date/time.",
+  "@selectStartAndEndDateTime": {},
+  "selectSlotOnMapFirst": "Please select a parking slot on the map first.",
+  "@selectSlotOnMapFirst": {},
+  "selectAvailableSlotType": "Please select an available slot type.",
+  "@selectAvailableSlotType": {},
+  "selectSlotFromAvailableTypes": "Please select a parking slot from the available types.",
+  "@selectSlotFromAvailableTypes": {},
+  "invalidDuration": "Invalid Duration",
+  "@invalidDuration": {},
+  "endTimeAfterStartTime": "End time must be after the start time",
+  "@endTimeAfterStartTime": {},
+  "selectAvailableSlotTypeFirst": "Please select an available Slot Type first",
+  "@selectAvailableSlotTypeFirst": {},
+  "bookingCreatedSlotNotAssigned": "Your booking was created, but the slot could not be assigned. Please contact support.",
+  "@bookingCreatedSlotNotAssigned": {},
+  "slotNotFoundOrConfirmed": "The selected slot could not be found or confirmed. Please try another selection.",
+  "@slotNotFoundOrConfirmed": {},
+  "unableToCreateBooking": "Unable to create the booking. Please try again.",
+  "@unableToCreateBooking": {},
+  "slotUnavailable": "Slot Unavailable",
+  "@slotUnavailable": {},
+  "selectionFullOrBooked": "This selection is currently full or already booked.",
+  "@selectionFullOrBooked": {},
+  "bookingPayment": "Booking Payment",
+  "@bookingPayment": {},
+  "membershipType": "Membership Type",
+  "@membershipType": {},
+  "membership": "Membership",
+  "@membership": {},
+  "typeLabel": "Type",
+  "@typeLabel": {},
+  "notAvailableShort": "N/A",
+  "@notAvailableShort": {},
+  "parkingTypeSubtitle": "{type} Parking",
+  "@parkingTypeSubtitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "required": "Required",
+  "@required": {},
+  "acceptTermsToContinue": "Please accept the Terms and Conditions to continue.",
+  "@acceptTermsToContinue": {},
+  "success": "Success",
+  "@success": {},
+  "comingSoon": "Coming Soon",
+  "@comingSoon": {},
+  "networkErrorTryAgain": "A network error occurred. Please try again.",
+  "@networkErrorTryAgain": {},
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {},
+  "passwordMinLength": "Password must be at least 6 characters long",
+  "@passwordMinLength": {},
+  "pleaseEnterPassword": "Please enter your Password",
+  "@pleaseEnterPassword": {},
+  "failedToFetchSupportDetails": "Failed to fetch support details",
+  "@failedToFetchSupportDetails": {},
+  "pleaseEnterUsernameOrMobile": "Please enter your Username or Mobile",
+  "@pleaseEnterUsernameOrMobile": {},
+  "enterValidMobileOrEmail": "Enter a valid UAE mobile (+971 XX XXX XXXX) or Email",
+  "@enterValidMobileOrEmail": {},
+  "loginSuccessful": "Login successful",
+  "@loginSuccessful": {},
+  "loginFailedCheckCredentials": "Login failed. Please check your credentials.",
+  "@loginFailedCheckCredentials": {},
+  "failedToGetGoogleToken": "Failed to get Google token",
+  "@failedToGetGoogleToken": {},
+  "facebookLoginComingSoon": "Facebook login will be available in the next update",
+  "@facebookLoginComingSoon": {},
+  "failedToGeneratePaymentUrl": "Failed to generate payment URL. Please try again.",
+  "@failedToGeneratePaymentUrl": {},
+  "failedToFetchPrivacyPolicy": "Failed to fetch Privacy Policy",
+  "@failedToFetchPrivacyPolicy": {},
+  "tokenNotFound": "Token not found",
+  "@tokenNotFound": {},
+  "nameCannotBeEmpty": "Name cannot be empty",
+  "@nameCannotBeEmpty": {},
+  "emailCannotBeEmpty": "Email cannot be empty",
+  "@emailCannotBeEmpty": {},
+  "invalidEmailFormat": "Invalid email format",
+  "@invalidEmailFormat": {},
+  "updateSuccessful": "Update successful",
+  "@updateSuccessful": {},
+  "updateFailed": "Update failed",
+  "@updateFailed": {},
+  "pleaseEnterFullName": "Please enter your Full Name",
+  "@pleaseEnterFullName": {},
+  "pleaseEnterEmailAddress": "Please enter your Email Address",
+  "@pleaseEnterEmailAddress": {},
+  "emailMustContainAt": "Email Address must contain @ symbol",
+  "@emailMustContainAt": {},
+  "pleaseAcceptTerms": "Please accept the Terms and Conditions",
+  "@pleaseAcceptTerms": {},
+  "userAlreadyExists": "User already exists. Please login or use a different email.",
+  "@userAlreadyExists": {},
+  "registrationSuccessful": "Registration successful",
+  "@registrationSuccessful": {},
+  "registrationFailed": "Registration failed",
+  "@registrationFailed": {},
+  "pleaseEnterPlateNumber": "Please enter Vehicle Plate Number",
+  "@pleaseEnterPlateNumber": {},
+  "vehicleRegisteredSuccessfully": "Vehicle registered successfully",
+  "@vehicleRegisteredSuccessfully": {},
+  "errorDuringRegistration": "An error occurred during registration",
+  "@errorDuringRegistration": {},
+  "draftSaved": "Draft Saved",
+  "@draftSaved": {},
+  "vehicleSavedAsDraft": "Vehicle details saved as draft",
+  "@vehicleSavedAsDraft": {},
+  "failedToFetchTerms": "Failed to fetch Terms and Conditions",
+  "@failedToFetchTerms": {},
+  "pleaseEnterEmailOrMobile": "Please enter your Email or Mobile Number",
+  "@pleaseEnterEmailOrMobile": {},
+  "pleaseEnterNewPassword": "Please enter your New Password",
+  "@pleaseEnterNewPassword": {},
+  "pleaseConfirmPassword": "Please confirm your Password",
+  "@pleaseConfirmPassword": {},
+  "otpSentSuccessfully": "OTP sent successfully",
+  "@otpSentSuccessfully": {},
+  "enterComplete6DigitOtp": "Please enter the complete 6-digit OTP",
+  "@enterComplete6DigitOtp": {},
+  "passwordResetSuccessful": "Password reset successful",
+  "@passwordResetSuccessful": {},
+  "membershipSubscription": "Membership Subscription",
+  "@membershipSubscription": {},
+  "planType": "Plan Type",
+  "@planType": {},
+  "validity": "Validity",
+  "@validity": {},
+  "basicMembershipBenefits": "Basic Membership Benefits",
+  "@basicMembershipBenefits": {},
+  "standardPlan": "Standard Plan",
+  "@standardPlan": {},
+  "failedToSendMessage": "Failed to send message",
+  "@failedToSendMessage": {},
+  "failedToSendImage": "Failed to send image",
+  "@failedToSendImage": {},
+  "networkError": "Network Error",
+  "@networkError": {},
+  "connectionTimeout": "Connection timeout. Please check your internet connection.",
+  "@connectionTimeout": {},
+  "unableToConnectServer": "Unable to connect to the server. Please verify your network.",
+  "@unableToConnectServer": {},
+  "serverErrorOccurred": "Server error occurred.",
+  "@serverErrorOccurred": {},
+  "invalidServerResponse": "Server returned an invalid response.",
+  "@invalidServerResponse": {},
+  "requestCancelled": "Request was cancelled.",
+  "@requestCancelled": {},
+  "unexpectedNetworkError": "An unexpected network error occurred.",
+  "@unexpectedNetworkError": {},
+  "pleaseEnterMobileNumber": "Please enter your Mobile Number",
+  "@pleaseEnterMobileNumber": {},
+  "mobileDigitsOnly": "Mobile number must contain only digits after +971",
+  "@mobileDigitsOnly": {},
+  "mobileExactly9Digits": "Mobile number must be exactly 9 digits after +971",
+  "@mobileExactly9Digits": {},
+  "mobileMax9Digits": "Mobile number cannot be more than 9 digits after +971",
+  "@mobileMax9Digits": {},
+  "information": "Information",
+  "@information": {},
+  "paymentMethodNotImplemented": "Payment method not implemented yet.",
+  "@paymentMethodNotImplemented": {},
+  "paymentFailed": "Payment Failed",
+  "@paymentFailed": {},
+  "paymentDeclined": "Payment was declined or failed. Please try again.",
+  "@paymentDeclined": {},
+  "paymentStatus": "Payment Status",
+  "@paymentStatus": {},
+  "paymentStillConfirming": "Payment is still being confirmed. Please check Bookings in a moment.",
+  "@paymentStillConfirming": {},
+  "manageAccountSecurity": "Manage your account security",
+  "@manageAccountSecurity": {},
+  "changePassword": "Change Password",
+  "@changePassword": {},
+  "enableBiometricsLogin": "Enable Biometrics Login",
+  "@enableBiometricsLogin": {},
+  "biometricsComingSoon": "Biometrics functionality will be available in the next update.",
+  "@biometricsComingSoon": {},
+  "twoStepVerification": "Two-Step Verification",
+  "@twoStepVerification": {},
+  "offStatus": "Off",
+  "@offStatus": {},
+  "twoStepComingSoon": "Two-Step verification will be available in the next update.",
+  "@twoStepComingSoon": {},
+  "selectYourSlot": "Select Your Slot",
+  "@selectYourSlot": {},
+  "noSlotsForType": "No slots available for this type.",
+  "@noSlotsForType": {},
+  "slotFreeCaps": "FREE",
+  "@slotFreeCaps": {},
+  "slotBookedCaps": "BOOKED",
+  "@slotBookedCaps": {},
+  "selectedTypeLabel": "Selected Type: {type}",
+  "@selectedTypeLabel": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "confirm": "Confirm",
+  "@confirm": {},
+  "chooseDateTimeForSlot": "Choose date and time for selecting the slot",
+  "@chooseDateTimeForSlot": {},
+  "noMembershipPackages": "No membership packages available",
+  "@noMembershipPackages": {},
+  "iAgreeToThe": "I agree to the ",
+  "@iAgreeToThe": {},
+  "hourUnit": "hour",
+  "@hourUnit": {},
+  "yearUnit": "year",
+  "@yearUnit": {},
+  "parkingFallback": "Parking",
+  "@parkingFallback": {},
+  "amLabel": "AM",
+  "@amLabel": {},
+  "pmLabel": "PM",
+  "@pmLabel": {},
+  "takeAPhoto": "Take a Photo",
+  "@takeAPhoto": {},
+  "chooseFromGallery": "Choose from Gallery",
+  "@chooseFromGallery": {},
+  "typeYourMessageHere": "Type your message here...",
+  "@typeYourMessageHere": {},
+  "howCanWeHelp": "How can we help you?",
+  "@howCanWeHelp": {},
+  "helpSupportDescription": "Need help? Contact our support team anytime. We’re here to assist you with parking, memberships, payments, and more.",
+  "@helpSupportDescription": {},
+  "emailSupport": "Email Support",
+  "@emailSupport": {},
+  "phoneSupport": "Phone Support",
+  "@phoneSupport": {},
+  "notAvailable": "Not available",
+  "@notAvailable": {},
+  "privacyPolicyNotAvailable": "Privacy policy not available.",
+  "@privacyPolicyNotAvailable": {},
+  "profilePicture": "Profile picture",
+  "@profilePicture": {},
+  "camera": "Camera",
+  "@camera": {},
+  "gallery": "Gallery",
+  "@gallery": {},
+  "securePayment": "Secure Payment",
+  "@securePayment": {},
+  "mapJetskiTrailerParking": "JETSKI WITH TRAILER PARKING",
+  "@mapJetskiTrailerParking": {},
+  "mapBoatsParking": "BOATS PARKING - {section}",
+  "@mapBoatsParking": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "mapBoatsParkingShaded": "BOATS PARKING - {section} (SHADED)",
+  "@mapBoatsParkingShaded": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "mapCaravanParking": "CARAVAN PARKING - {section}",
+  "@mapCaravanParking": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "mapCaravanParkingShaded": "CARAVAN PARKING - {section}(SHADED)",
+  "@mapCaravanParkingShaded": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "mapFoodTruckParkingLength": "FOOD TRUCK PARKING - Length {length}m",
+  "@mapFoodTruckParkingLength": {
+    "placeholders": {
+      "length": {
+        "type": "String"
+      }
+    }
+  },
+  "mapExit": "EXIT",
+  "@mapExit": {},
+  "mapEntrance": "ENTRANCE",
+  "@mapEntrance": {},
+  "membershipTitle": "{name} Membership",
+  "@membershipTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalField": "{field} (Optional)",
+  "@optionalField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "color": "Color",
+  "@color": {},
+  "colorHint": "e.g. Blue",
+  "@colorHint": {},
+  "extraAmount": "Extra Amount",
+  "@extraAmount": {},
+  "userFallback": "User",
+  "@userFallback": {},
+  "silverMember": "Silver Member",
+  "@silverMember": {},
+  "titleFallback": "Title",
+  "@titleFallback": {},
+  "rewardFallback": "Reward",
+  "@rewardFallback": {},
+  "loading": "Loading...",
+  "@loading": {},
+  "guest": "Guest",
+  "@guest": {},
+  "spotLabel": "Spot {slot}",
+  "stateConfirmed": "Confirmed",
+  "@stateConfirmed": {},
+  "stateCancelled": "Cancelled",
+  "@stateCancelled": {},
+  "stateCompleted": "Completed",
+  "@stateCompleted": {},
+  "stateExpired": "Expired",
+  "@stateExpired": {},
+  "stateDraft": "Draft",
+  "@stateDraft": {},
+  "statePendingPayment": "Pending Payment",
+  "@statePendingPayment": {},
+  "statePaid": "Paid",
+  "@statePaid": {},
+  "planHourly": "Hourly",
+  "@planHourly": {},
+  "planDaily": "Daily",
+  "@planDaily": {},
+  "planWeekly": "Weekly",
+  "@planWeekly": {},
+  "planMonthly": "Monthly",
+  "@planMonthly": {},
+  "planYearly": "Yearly",
+  "@planYearly": {},
+  "@spotLabel": {
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "meLabel": "Me",
+  "@meLabel": {},
+  "supportLabel": "Support",
+  "@supportLabel": {},
+  "durationDays": "{count, plural, =1{{count} Day} other{{count} Days}}",
+  "@durationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHours": "{count, plural, =1{{count} Hour} other{{count} Hours}}",
+  "@durationHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{count, plural, =1{{count} Minute} other{{count} Minutes}}",
+  "@durationMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

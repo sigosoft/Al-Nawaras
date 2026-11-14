@@ -2,6 +2,7 @@ import 'package:al_nawaras/view/chat/customer_support_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/customer_support_controller.dart';
+import '../../generated/l10n.dart';
 
 class ChatbotButton extends StatelessWidget {
   const ChatbotButton({super.key});
@@ -41,9 +42,9 @@ class ChatbotButton extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Text(
-                    'Need Help?',
-                    style: TextStyle(
+                  child: Text(
+                    S.of(context).needHelp,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       color: Colors.black,

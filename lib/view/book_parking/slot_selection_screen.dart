@@ -13,19 +13,19 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
       appBar: CustomAppBar(
-        title: "Select Your Slot",
+        title: S.of(context).selectYourSlot,
         centerTitle: false,
         onBackPressed: () => Get.back(),
       ),
       body: Column(
         children: [
-          _buildInfoSection(),
+          _buildInfoSection(context),
           Expanded(
             child: GetBuilder<BookParkingController>(
               builder: (controller) {
                 if (controller.availableSlotsList.isEmpty) {
-                  return const Center(
-                    child: Text("No slots available for this type."),
+                  return Center(
+                    child: Text(S.of(context).noSlotsForType),
                   );
                 }
                 return GridView.builder(
@@ -90,7 +90,7 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              slot['name'] ?? 'N/A',
+                              slot['name'] ?? S.of(context).notAvailableShort,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -124,7 +124,7 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                                 ),
                               ),
                             Text(
-                              isFree ? "FREE" : "BOOKED",
+                              isFree ? S.of(context).slotFreeCaps : S.of(context).slotBookedCaps,
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w500,
@@ -142,13 +142,13 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
               },
             ),
           ),
-          _buildConfirmButton(),
+          _buildConfirmButton(context),
         ],
       ),
     );
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -157,17 +157,17 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Selected Type: ${controller.selectedSlotTypeName}",
+            S.of(context).selectedTypeLabel(controller.selectedSlotTypeName ?? ''),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              _buildLegendItem(Colors.green, "Available"),
+              _buildLegendItem(Colors.green, S.of(context).available),
               const SizedBox(width: 20),
-              _buildLegendItem(Colors.grey, "Booked"),
+              _buildLegendItem(Colors.grey, S.of(context).booked),
               const SizedBox(width: 20),
-              _buildLegendItem(const Color(0xFFE30613), "Selected"),
+              _buildLegendItem(const Color(0xFFE30613), S.of(context).selected),
             ],
           ),
         ],
@@ -196,7 +196,7 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
     );
   }
 
-  Widget _buildConfirmButton() {
+  Widget _buildConfirmButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
@@ -226,9 +226,9 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Total Amount",
-                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      Text(
+                        S.of(context).totalAmount,
+                        style: const TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -254,9 +254,9 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                     elevation: 0,
                     disabledBackgroundColor: Colors.grey.shade300,
                   ),
-                  child: const Text(
-                    "Confirm",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  child: Text(
+                    S.of(context).confirm,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
               ],

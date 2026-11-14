@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../controller/customer_support_controller.dart';
+import '../../generated/l10n.dart';
 
 class CustomerSupportView extends StatelessWidget {
   const CustomerSupportView({super.key});
@@ -30,7 +31,7 @@ class CustomerSupportView extends StatelessWidget {
       final dt = DateTime.parse(t).toLocal();
       final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
       final m = dt.minute.toString().padLeft(2, '0');
-      final period = dt.hour >= 12 ? 'PM' : 'AM';
+      final period = dt.hour >= 12 ? S.of(Get.context!).pmLabel : S.of(Get.context!).amLabel;
       return '$h:$m $period';
     } catch (_) {
       return rawTime;
@@ -314,7 +315,7 @@ class CustomerSupportView extends StatelessWidget {
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt, color: Colors.black54),
-                title: const Text('Take a Photo'),
+                title: Text(S.of(context).takeAPhoto),
                 onTap: () {
                   Navigator.pop(context);
                   controller.pickAndSendImage(ImageSource.camera);
@@ -322,7 +323,7 @@ class CustomerSupportView extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library, color: Colors.black54),
-                title: const Text('Choose from Gallery'),
+                title: Text(S.of(context).chooseFromGallery),
                 onTap: () {
                   Navigator.pop(context);
                   controller.pickAndSendImage(ImageSource.gallery);
@@ -367,7 +368,7 @@ class CustomerSupportView extends StatelessWidget {
                 controller: controller.messageController,
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Type your message here...',
+                  hintText: S.of(Get.context!).typeYourMessageHere,
                   hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
@@ -401,9 +402,9 @@ class CustomerSupportView extends StatelessWidget {
                 elevation: 0,
                 padding: EdgeInsets.zero,
               ),
-              child: const Text(
-                'Send',
-                style: TextStyle(
+              child: Text(
+                S.of(Get.context!).send,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 15,

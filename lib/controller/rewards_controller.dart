@@ -106,12 +106,12 @@ class RewardsController extends GetxController {
     } catch (e) {}
   }
 
+  /// Badge artwork for the tier; empty when there is none (only Silver has
+  /// an image), so the card shows a neutral icon instead.
   String getMemberImage(String? type) {
-    if (type == null) return 'lib/assets/images/Silver member.png';
-    String lower = type.toLowerCase();
-    if (lower.contains('silver')) return 'lib/assets/images/Silver member.png';
-    if (lower.contains('gold'))
-      return 'lib/assets/images/Silver member.png'; // Placeholder if gold not available
-    return 'lib/assets/images/Silver member.png';
+    if (type != null && type.toLowerCase().contains('silver')) {
+      return 'lib/assets/images/Silver member.png';
+    }
+    return '';
   }
 }

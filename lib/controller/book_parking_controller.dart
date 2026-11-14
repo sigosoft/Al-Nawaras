@@ -7,7 +7,9 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import '../config/api_constants.dart';
+import '../utils/date_utils.dart';
 import '../utils/slot_size_utils.dart';
+import '../generated/l10n.dart';
 import 'base_client.dart';
 
 class BookParkingController extends GetxController {
@@ -98,6 +100,7 @@ class BookParkingController extends GetxController {
 
       final response = await dio.get(
         ApiConstants.vehicles,
+        queryParameters: {'limit': 100, 'offset': 0},
         options: Options(headers: headers),
       );
 
@@ -255,6 +258,7 @@ class BookParkingController extends GetxController {
 
       final response = await dio.get(
         ApiConstants.memberships,
+        queryParameters: {'limit': 50, 'offset': 0},
         options: Options(headers: headers),
       );
 
@@ -288,12 +292,12 @@ class BookParkingController extends GetxController {
           final lowerTitle = title.toLowerCase();
 
           if (lowerTitle.contains('hourly')) {
-            finalPrice = 'AED 20/hour';
+            finalPrice = 'AED 20/${S.of(Get.context!).hourUnit}';
           } else if (lowerTitle.contains('monthly')) {
-            finalPrice = 'AED 1,000/month';
+            finalPrice = 'AED 1,000/${S.of(Get.context!).month}';
           } else if (lowerTitle.contains('yearly') ||
               lowerTitle.contains('annual')) {
-            finalPrice = 'AED 6,000/year';
+            finalPrice = 'AED 6,000/${S.of(Get.context!).yearUnit}';
           }
 
           // Filter out 'Daily' as requested
@@ -415,13 +419,17 @@ class BookParkingController extends GetxController {
         addonServices = [];
 
         for (final s in servicesList) {
+          // Docs field is service_name; keep older keys as fallbacks.
           final title =
-              s['name']?.toString() ?? s['title']?.toString() ?? 'Service';
+              s['service_name']?.toString() ??
+              s['name']?.toString() ??
+              s['title']?.toString() ??
+              S.of(Get.context!).service;
           final priceVal = s['price'] ?? 0;
           final subtitle =
               s['subtitle']?.toString() ??
               s['description']?.toString() ??
-              'Additional service';
+              S.of(Get.context!).additionalService;
           addonServices.add({
             'title': title,
             'price': 'AED $priceVal',
@@ -659,9 +667,9 @@ class BookParkingController extends GetxController {
         }
       } else {
         String msg =
-            response.data?['message'] ?? 'Unable to fetch availability';
+            response.data?['message'] ?? S.of(Get.context!).unableToFetchAvailability;
         Get.snackbar(
-          'Notice',
+          S.of(Get.context!).notice,
           msg,
           backgroundColor: Colors.orangeAccent,
           colorText: Colors.white,
@@ -797,8 +805,8 @@ class BookParkingController extends GetxController {
             (rawData is Map && rawData.isEmpty) ||
             (rawData is List && rawData.isEmpty)) {
           Get.snackbar(
-            'No Slots Available',
-            'No units available for the selected ${selectedMembership.toLowerCase()} duration. Try another date or parking type.',
+            S.of(Get.context!).noSlotsAvailable,
+            S.of(Get.context!).noUnitsForDuration(selectedMembership.toLowerCase()),
             backgroundColor: Colors.orangeAccent,
             colorText: Colors.white,
             duration: const Duration(seconds: 4),
@@ -839,9 +847,9 @@ class BookParkingController extends GetxController {
         Get.to(() => const SlotSelectionScreen());
       } else {
         String msg =
-            response.data?['message'] ?? 'Unable to check slot availability';
+            response.data?['message'] ?? S.of(Get.context!).unableToCheckSlotAvailability;
         Get.snackbar(
-          'Notice',
+          S.of(Get.context!).notice,
           msg,
           backgroundColor: Colors.orangeAccent,
           colorText: Colors.white,
@@ -963,12 +971,9 @@ class BookParkingController extends GetxController {
   Future<void> onNextClick() async {
     // --- START VALIDATION ---
     if (!isTermsAccepted) {
-      final isArabic = Get.locale?.languageCode == 'ar';
       Get.snackbar(
-        isArabic ? 'مطلوب' : 'Required',
-        isArabic
-            ? 'يرجى الموافقة على الشروط والأحكام للمتابعة'
-            : 'Please accept the Terms and Conditions to continue.',
+        S.of(Get.context!).required,
+        S.of(Get.context!).acceptTermsToContinue,
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -978,8 +983,8 @@ class BookParkingController extends GetxController {
 
     if (selectedVehicleData == null) {
       Get.snackbar(
-        'Selection Required',
-        'Please select a vehicle before proceeding.',
+        S.of(Get.context!).selectionRequired,
+        S.of(Get.context!).selectVehicleBeforeProceeding,
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -992,8 +997,8 @@ class BookParkingController extends GetxController {
         endDateController.text.isEmpty ||
         endTimeController.text.isEmpty) {
       Get.snackbar(
-        'Selection Required',
-        'Please select both start and end date/time.',
+        S.of(Get.context!).selectionRequired,
+        S.of(Get.context!).selectStartAndEndDateTime,
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -1004,8 +1009,8 @@ class BookParkingController extends GetxController {
     if (fromSmartParking) {
       if (selectedSlotName == null || selectedSlotName!.trim().isEmpty) {
         Get.snackbar(
-          'Selection Required',
-          'Please select a parking slot on the map first.',
+          S.of(Get.context!).selectionRequired,
+          S.of(Get.context!).selectSlotOnMapFirst,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -1014,8 +1019,8 @@ class BookParkingController extends GetxController {
       }
       if (selectedSlotTypeId == null) {
         Get.snackbar(
-          'Selection Required',
-          'Please select an available slot type.',
+          S.of(Get.context!).selectionRequired,
+          S.of(Get.context!).selectAvailableSlotType,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM,
@@ -1024,8 +1029,8 @@ class BookParkingController extends GetxController {
       }
     } else if (selectedSlotId == null) {
       Get.snackbar(
-        'Selection Required',
-        'Please select a parking slot from the available types.',
+        S.of(Get.context!).selectionRequired,
+        S.of(Get.context!).selectSlotFromAvailableTypes,
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -1039,6 +1044,7 @@ class BookParkingController extends GetxController {
 
     int? bookingId;
     double? bookingTotal;
+    String? bookFailMessage;
 
     // Step 1: Call parking/book API
     try {
@@ -1066,8 +1072,8 @@ class BookParkingController extends GetxController {
       // Validate Duration
       if (!endDate.isAfter(startDate)) {
         Get.snackbar(
-          'Invalid Duration',
-          'End time must be after the start time',
+          S.of(Get.context!).invalidDuration,
+          S.of(Get.context!).endTimeAfterStartTime,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
         );
@@ -1077,8 +1083,8 @@ class BookParkingController extends GetxController {
       }
       if (selectedSlotTypeId == null) {
         Get.snackbar(
-          'Selection Required',
-          'Please select an available Slot Type first',
+          S.of(Get.context!).selectionRequired,
+          S.of(Get.context!).selectAvailableSlotTypeFirst,
           backgroundColor: Colors.redAccent,
           colorText: Colors.white,
         );
@@ -1121,10 +1127,14 @@ class BookParkingController extends GetxController {
       debugPrint('Status Code: ${bookResponse.statusCode}');
       debugPrint('Response Body: ${bookResponse.data}');
 
+      if (bookResponse.data is Map) {
+        bookFailMessage = bookResponse.data['message']?.toString();
+      }
       if ((bookResponse.statusCode == 200 || bookResponse.statusCode == 201) &&
-          bookResponse.data != null) {
+          bookResponse.data != null &&
+          bookResponse.data['status'] != false) {
         final bookData = bookResponse.data['data'];
-        if (bookData != null) {
+        if (bookData is Map && bookData['booking_id'] != null) {
           bookingId = bookData['booking_id'];
           bookingTotal = (bookData['total_amount'] as num?)?.toDouble();
           lastBookingId = bookingId;
@@ -1138,8 +1148,28 @@ class BookParkingController extends GetxController {
               bookData['state']?.toString().toLowerCase() ?? '';
           final needsConfirm =
               bookingState == 'draft' || bookingState == 'pending_payment';
+          // Regular Book Parking: parking/book currently ignores slot_id and
+          // returns "booked" with no slot, so assign the chosen slot here.
+          // The booking already exists, so a failure must not block payment.
+          final assignBookedSlot = !fromSmartParking &&
+              bookingState == 'booked' &&
+              slotToConfirm != null;
 
-          if (needsConfirm && slotToConfirm != null) {
+          if (assignBookedSlot) {
+            final assigned = await confirmBookingLocation(
+              bookingId!,
+              slotToConfirm,
+              selectedSlotId,
+            );
+            if (!assigned) {
+              Get.snackbar(
+                S.of(Get.context!).notice,
+                S.of(Get.context!).bookingCreatedSlotNotAssigned,
+                backgroundColor: Colors.orangeAccent,
+                colorText: Colors.white,
+              );
+            }
+          } else if (needsConfirm && slotToConfirm != null) {
             final confirmed = await confirmBookingLocation(
               bookingId!,
               slotToConfirm,
@@ -1147,8 +1177,8 @@ class BookParkingController extends GetxController {
             );
             if (!confirmed) {
               Get.snackbar(
-                'Slot Not Found',
-                'The selected slot could not be found or confirmed. Please try another selection.',
+                S.of(Get.context!).errorConfirmingLocation,
+                S.of(Get.context!).slotNotFoundOrConfirmed,
                 backgroundColor: Colors.redAccent,
                 colorText: Colors.white,
               );
@@ -1195,6 +1225,19 @@ class BookParkingController extends GetxController {
       return; // STOP HERE on error
     }
 
+    // No booking was created: stop. (Never fall back to another booking id.)
+    if (bookingId == null) {
+      Get.snackbar(
+        S.of(Get.context!).notice,
+        bookFailMessage ?? S.of(Get.context!).unableToCreateBooking,
+        backgroundColor: Colors.orangeAccent,
+        colorText: Colors.white,
+      );
+      isBooking = false;
+      if (!isClosed) update();
+      return;
+    }
+
     // Step 2: Fetch payment/summary and navigate to PaymentView
     try {
       final dio = BaseClient.dio;
@@ -1205,8 +1248,7 @@ class BookParkingController extends GetxController {
         'Accept': 'application/json',
       };
 
-      // Use the real booking_id if available, else fallback to 1
-      final summaryBookingId = bookingId ?? 1;
+      final summaryBookingId = bookingId;
 
       debugPrint('\n--- API REQUEST (payment/summary) ---');
       debugPrint(
@@ -1250,26 +1292,26 @@ class BookParkingController extends GetxController {
         Get.off(
           () => PaymentView(
             bookingId: bookingId,
-            title: 'Booking Payment',
+            title: S.of(Get.context!).bookingPayment,
             subtitle:
-                '${data['parking_type']?.toString() ?? selectedParkingType} Parking',
+                S.of(Get.context!).parkingTypeSubtitle(data['parking_type']?.toString() ?? selectedParkingType),
             amount: displayTotal,
             subtotal: "$apiCurrency $apiSubtotal",
             vat: "$apiCurrency $apiVat",
             total: displayTotal,
             details: [
               {
-                'label': 'Membership Type',
+                'label': S.of(Get.context!).membershipType,
                 'value':
                     data['membership_type']?.toString() ?? selectedMembership,
               },
               {
-                'label': 'Parking Type',
+                'label': S.of(Get.context!).parkingType,
                 'value':
                     data['parking_type']?.toString() ?? selectedParkingType,
               },
               {
-                'label': 'Vehicle',
+                'label': S.of(Get.context!).vehicleLabel,
                 'value': () {
                   if (selectedVehicleData != null) {
                     // Helper to extract string from Odoo values (can be String, List, or false/null)
@@ -1316,7 +1358,7 @@ class BookParkingController extends GetxController {
                   }
 
                   // Fallback: Try to extract the model from raw API string format "license_number (model)"
-                  final rawVehicle = data['vehicle']?.toString() ?? 'N/A';
+                  final rawVehicle = data['vehicle']?.toString() ?? '';
                   final match = RegExp(r'\(([^)]+)\)').firstMatch(rawVehicle);
                   if (match != null) {
                     final modelStr = match.group(1)!.trim();
@@ -1326,19 +1368,19 @@ class BookParkingController extends GetxController {
                   }
 
                   final cleaned = rawVehicle.replaceAll(RegExp(r'\s*\(?False\)?', caseSensitive: false), '').trim();
-                  return cleaned.isEmpty ? 'N/A' : cleaned;
+                  return cleaned.isEmpty ? S.of(Get.context!).notAvailableShort : cleaned;
                 }(),
               },
               {
-                'label': 'Start Date',
-                'value': data['start_date']?.toString() ?? 'N/A',
+                'label': S.of(Get.context!).startDateLabel,
+                'value': AppDateUtils.formatApiUtc(data['start_date']),
               },
               {
-                'label': 'End Date',
-                'value': data['end_date']?.toString() ?? 'N/A',
+                'label': S.of(Get.context!).endDateLabel,
+                'value': AppDateUtils.formatApiUtc(data['end_date']),
               },
               {
-                'label': 'Duration',
+                'label': S.of(Get.context!).duration,
                 'value': () {
                   final rawDuration = data['duration'];
                   if (rawDuration != null &&
@@ -1374,17 +1416,17 @@ class BookParkingController extends GetxController {
                     final days = diff.inDays;
                     final hours = diff.inHours;
                     if (days > 0) {
-                      return "$days ${days == 1 ? 'Day' : 'Days'}";
+                      return S.of(Get.context!).durationDays(days);
                     } else if (hours > 0) {
-                      return "$hours ${hours == 1 ? 'Hour' : 'Hours'}";
+                      return S.of(Get.context!).durationHours(hours);
                     } else {
                       final minutes = diff.inMinutes;
-                      return "$minutes ${minutes == 1 ? 'Minute' : 'Minutes'}";
+                      return S.of(Get.context!).durationMinutes(minutes);
                     }
                   } catch (e) {
                     debugPrint('Error calculating duration: $e');
                   }
-                  return 'N/A';
+                  return S.of(Get.context!).notAvailableShort;
                 }(),
               },
             ],
@@ -1426,25 +1468,25 @@ class BookParkingController extends GetxController {
     Get.to(
       () => PaymentView(
         bookingId: bookingId,
-        title: 'Booking Payment',
-        subtitle: '$selectedParkingType Parking',
+        title: S.of(Get.context!).bookingPayment,
+        subtitle: S.of(Get.context!).parkingTypeSubtitle(selectedParkingType),
         amount: calculatedTotal,
         subtotal: calculatedTotal,
         vat: 'AED 0.00',
         total: calculatedTotal,
         details: [
           {
-            'label': 'Vehicle',
-            'value': selectedVehicleData?['vehicle_type_name'] ?? 'N/A',
+            'label': S.of(Get.context!).vehicleLabel,
+            'value': selectedVehicleData?['vehicle_type_name'] ?? S.of(Get.context!).notAvailableShort,
           },
-          {'label': 'Membership', 'value': selectedMembership},
-          {'label': 'Type', 'value': selectedParkingType},
+          {'label': S.of(Get.context!).membership, 'value': selectedMembership},
+          {'label': S.of(Get.context!).typeLabel, 'value': selectedParkingType},
           {
-            'label': 'Start Date',
+            'label': S.of(Get.context!).startDateLabel,
             'value': "${dateController.text} ${timeController.text}",
           },
           {
-            'label': 'End Date',
+            'label': S.of(Get.context!).endDateLabel,
             'value': "${endDateController.text} ${endTimeController.text}",
           },
         ],
@@ -1455,8 +1497,8 @@ class BookParkingController extends GetxController {
   /// Shows a snackbar when an unavailable item (slot type or specific slot) is selected.
   void handleUnavailableSelection({String? message}) {
     Get.snackbar(
-      'Slot Unavailable',
-      message ?? 'This selection is currently full or already booked.',
+      S.of(Get.context!).slotUnavailable,
+      message ?? S.of(Get.context!).selectionFullOrBooked,
       backgroundColor: Colors.redAccent,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
