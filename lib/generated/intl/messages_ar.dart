@@ -418,7 +418,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "signUp": MessageLookupByLibrary.simpleMessage("اشتراك"),
     "silverTier": MessageLookupByLibrary.simpleMessage("فضي"),
     "sizeFormat": m9,
-    "sizeLabel": MessageLookupByLibrary.simpleMessage("الحجم : "),
+    "sizeLabel": MessageLookupByLibrary.simpleMessage("حجم الموقف : "),
     "skip": MessageLookupByLibrary.simpleMessage("تخطي"),
     "slotAlreadyBooked": MessageLookupByLibrary.simpleMessage(
       "هذا الموقف محجوز بالفعل ولا يمكن اختياره.",

@@ -440,7 +440,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "signUp": MessageLookupByLibrary.simpleMessage("Sign Up"),
     "silverTier": MessageLookupByLibrary.simpleMessage("Silver"),
     "sizeFormat": m9,
-    "sizeLabel": MessageLookupByLibrary.simpleMessage("Size : "),
+    "sizeLabel": MessageLookupByLibrary.simpleMessage("Parking Size : "),
     "skip": MessageLookupByLibrary.simpleMessage("Skip"),
     "slotAlreadyBooked": MessageLookupByLibrary.simpleMessage(
       "This slot is already booked and cannot be selected.",

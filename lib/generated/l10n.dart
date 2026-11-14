@@ -1384,9 +1384,14 @@ class S {
     );
   }
 
-  /// `Size : `
+  /// `Parking Size : `
   String get sizeLabel {
-    return Intl.message('Size : ', name: 'sizeLabel', desc: '', args: []);
+    return Intl.message(
+      'Parking Size : ',
+      name: 'sizeLabel',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Confirm Location`

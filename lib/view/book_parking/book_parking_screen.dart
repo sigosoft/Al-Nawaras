@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/book_parking_controller.dart';
 import '../../generated/l10n.dart';
+import '../../utils/slot_size_utils.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/draggable_help_button.dart';
 import '../widgets/custom_no_data.dart';
@@ -10,12 +11,14 @@ class BookParkingScreen extends StatelessWidget {
   final bool fromSmartParking;
   final String? preselectedSlotNumber;
   final String? preselectedSlotCode;
+  final String? preselectedSlotSize;
 
   const BookParkingScreen({
     super.key,
     this.fromSmartParking = false,
     this.preselectedSlotNumber,
     this.preselectedSlotCode,
+    this.preselectedSlotSize,
   });
 
   @override
@@ -37,6 +40,7 @@ class BookParkingScreen extends StatelessWidget {
               controller.applySmartParkingSlot(
                 slotNumber: preselectedSlotNumber!,
                 slotCode: preselectedSlotCode,
+                slotSize: preselectedSlotSize,
               );
             }
           });
@@ -47,6 +51,7 @@ class BookParkingScreen extends StatelessWidget {
             controller.smartParkingSlotCode = null;
             controller.selectedSlotId = null;
             controller.selectedSlotName = null;
+            controller.selectedSlotSize = null;
             controller.update();
           });
         }
@@ -134,14 +139,34 @@ class BookParkingScreen extends StatelessWidget {
                                         color: Colors.green, size: 20),
                                     const SizedBox(width: 10),
                                     Expanded(
-                                      child: Text(
-                                        S.of(context).selectedSlot(
-                                              controller.selectedSlotName ?? '',
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            S.of(context).selectedSlot(
+                                                  controller.selectedSlotName ??
+                                                      '',
+                                                ),
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.green),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if ((controller.selectedSlotSize ??
+                                                  '')
+                                              .isNotEmpty) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '${S.of(context).sizeLabel}${SlotSizeUtils.format(controller.selectedSlotSize!)}',
+                                              style: const TextStyle(
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.green),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.green),
-                                        overflow: TextOverflow.ellipsis,
+                                          ],
+                                        ],
                                       ),
                                     ),
                                   ],

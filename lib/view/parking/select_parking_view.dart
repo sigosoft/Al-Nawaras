@@ -7,6 +7,7 @@ import '../../config/api_constants.dart';
 import '../../controller/base_client.dart';
 import '../../controller/book_parking_controller.dart';
 import '../../generated/l10n.dart';
+import '../../utils/slot_size_utils.dart';
 import 'dart:math' as math;
 
 class _SlotRowConfig {
@@ -510,9 +511,10 @@ class _SelectParkingViewState extends State<SelectParkingView> {
             selectedLocationType =
                 data['location_type']?.toString() ??
                 _getLocationType(slotNumber.split('-').first, slotNumber);
-            selectedSlotSize =
-                data['slot_size']?.toString() ??
-                _getSlotSize(slotNumber.split('-').first);
+            final apiSize = SlotSizeUtils.read(data);
+            selectedSlotSize = apiSize.isNotEmpty
+                ? apiSize
+                : _getSlotSize(slotNumber.split('-').first);
             selectedSlotNumber = data['slot_number']?.toString() ?? "N/A";
             selectedLocationCode = data['location_code']?.toString() ?? "N/A";
 
@@ -569,9 +571,46 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         codeString.split('-').first,
         codeString,
       );
+      // Local fallback until the dynamic size arrives from slot_details.
       selectedSlotSize = _getSlotSize(codeString.split('-').first);
     });
     _saveSelectedSlot();
+    _fetchSlotSize(codeString, formattedSlot);
+  }
+
+  /// Fetches the dynamic `slot_size` for the tapped slot from
+  /// `/api/parking/slot_details` and replaces the local fallback size.
+  Future<void> _fetchSlotSize(String codeString, String slotNumber) async {
+    try {
+      final token = GetStorage().read('token');
+      final response = await BaseClient.dio.post(
+        ApiConstants.slotDetails,
+        data: {'slot_number': slotNumber},
+        options: Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Accept': 'application/json',
+          },
+          contentType: Headers.formUrlEncodedContentType,
+        ),
+      );
+      debugPrint('--- API RESPONSE (slot_details / size) ---');
+      debugPrint('Response Data: ${response.data}');
+
+      if (response.statusCode != 200 ||
+          response.data == null ||
+          response.data['status'] != true) {
+        return;
+      }
+      final data = response.data['data'];
+      final size = data is Map ? SlotSizeUtils.read(data) : '';
+      // Ignore stale responses if the user tapped another slot meanwhile.
+      if (!mounted || size.isEmpty || selectedSlotCode != codeString) return;
+      setState(() => selectedSlotSize = size);
+      _saveSelectedSlot();
+    } catch (e) {
+      debugPrint('Error fetching slot size: $e');
+    }
   }
 
   String _formatSlotCode(String prefix, int index) {
@@ -640,6 +679,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
     bookCtrl.applySmartParkingSlot(
       slotNumber: selectedSlotNumber,
       slotCode: selectedSlotCode,
+      slotSize: selectedSlotSize,
     );
 
     Get.to(
@@ -647,6 +687,7 @@ class _SelectParkingViewState extends State<SelectParkingView> {
         fromSmartParking: true,
         preselectedSlotNumber: selectedSlotNumber,
         preselectedSlotCode: selectedSlotCode,
+        preselectedSlotSize: selectedSlotSize,
       ),
     );
   }
@@ -862,7 +903,10 @@ class _SelectParkingViewState extends State<SelectParkingView> {
               S.of(context).locationTypeLabel,
               selectedLocationType,
             ),
-            _buildInfoRow(S.of(context).sizeLabel, selectedSlotSize),
+            _buildInfoRow(
+              S.of(context).sizeLabel,
+              SlotSizeUtils.format(selectedSlotSize),
+            ),
           ],
 
           const SizedBox(height: 14),

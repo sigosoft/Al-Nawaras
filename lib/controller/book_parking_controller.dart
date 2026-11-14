@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import '../config/api_constants.dart';
+import '../utils/slot_size_utils.dart';
 import 'base_client.dart';
 
 class BookParkingController extends GetxController {
@@ -32,6 +33,7 @@ class BookParkingController extends GetxController {
   List<Map<String, dynamic>> availableSlotsList = [];
   int? selectedSlotId;
   String? selectedSlotName; // e.g. "B35 - JETSKI" or "Slot A-101"
+  String? selectedSlotSize; // raw API "slot_size", e.g. "4.6m x 4m"
   int? selectedSlotTypeId;
   String? selectedSlotTypeName;
 
@@ -66,9 +68,11 @@ class BookParkingController extends GetxController {
   void applySmartParkingSlot({
     required String slotNumber,
     String? slotCode,
+    String? slotSize,
   }) {
     fromSmartParking = true;
     selectedSlotName = slotNumber;
+    selectedSlotSize = (slotSize == null || slotSize.isEmpty) ? null : slotSize;
     smartParkingSlotCode = slotCode;
     selectedSlotId = null;
     if (!isClosed) update();
@@ -811,6 +815,22 @@ class BookParkingController extends GetxController {
         // Smart Parking already has a physical slot from the map —
         // only bind the slot type for pricing/booking, skip list selection.
         if (fromSmartParking) {
+          // Pick up the dynamic slot_size for the map-selected slot, if the
+          // availability response contains it.
+          final mapSlot = (selectedSlotName ?? '').trim().toLowerCase();
+          if (mapSlot.isNotEmpty) {
+            for (final slot in availableSlotsList) {
+              final name = (slot['name'] ?? slot['slot_number'] ?? '')
+                  .toString()
+                  .trim()
+                  .toLowerCase();
+              final size = SlotSizeUtils.read(slot);
+              if (name == mapSlot && size.isNotEmpty) {
+                selectedSlotSize = size;
+                break;
+              }
+            }
+          }
           if (!isClosed) update();
           return;
         }
@@ -837,9 +857,10 @@ class BookParkingController extends GetxController {
     }
   }
 
-  void selectSlot(int id, String name) {
+  void selectSlot(int id, String name, {String? size}) {
     selectedSlotId = id;
     selectedSlotName = name;
+    selectedSlotSize = (size == null || size.isEmpty) ? null : size;
     if (!isClosed) update();
   }
 
@@ -1155,6 +1176,7 @@ class BookParkingController extends GetxController {
           if (!fromSmartParking) {
             selectedSlotId = null;
             selectedSlotName = null;
+            selectedSlotSize = null;
           }
           fetchAvailableSummary();
         }
@@ -1222,6 +1244,7 @@ class BookParkingController extends GetxController {
         availableSlotsList = [];
         selectedSlotId = null;
         selectedSlotName = null;
+        selectedSlotSize = null;
         if (!isClosed) update();
 
         Get.off(

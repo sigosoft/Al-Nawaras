@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/book_parking_controller.dart';
 import '../../generated/l10n.dart';
+import '../../utils/slot_size_utils.dart';
 import '../widgets/custom_app_bar.dart';
 
 class SlotSelectionScreen extends GetView<BookParkingController> {
@@ -40,19 +41,31 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                     final slot = controller.availableSlotsList[index];
                     final isFree = slot['state'] == 'free';
                     final isSelected = controller.selectedSlotId == slot['id'];
+                    final slotSize = SlotSizeUtils.read(slot);
 
                     return GestureDetector(
                       onTap: isFree
-                          ? (isSelected ? null : () => controller.selectSlot(slot['id'], slot['name']))
+                          ? (isSelected
+                                ? null
+                                : () => controller.selectSlot(
+                                    slot['id'],
+                                    slot['name'],
+                                    size: slotSize,
+                                  ))
                           : () => controller.handleUnavailableSelection(
-                              message: S.of(context).slotAlreadyBooked),
+                              message: S.of(context).slotAlreadyBooked,
+                            ),
                       child: Container(
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? const Color(0xFFE30613) // Branded Red for your choice
+                              ? const Color(
+                                  0xFFE30613,
+                                ) // Branded Red for your choice
                               : (isFree
-                                  ? Colors.green.withValues(alpha: 0.1)
-                                  : Colors.grey.withValues(alpha: 0.2)), // Grey for booked
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.grey.withValues(
+                                        alpha: 0.2,
+                                      )), // Grey for booked
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
@@ -67,7 +80,9 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                             Icon(
                               isSelected
                                   ? Icons.check_circle
-                                  : (isFree ? Icons.door_front_door : Icons.block),
+                                  : (isFree
+                                        ? Icons.door_front_door
+                                        : Icons.block),
                               color: isSelected
                                   ? Colors.white
                                   : (isFree ? Colors.green : Colors.grey),
@@ -79,9 +94,35 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? Colors.white : Colors.black87,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.black87,
                               ),
                             ),
+                            if (slotSize.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                // Scale down instead of truncating: the
+                                // selected tile's thicker border leaves less room.
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    '${S.of(context).sizeLabel}${SlotSizeUtils.format(slotSize)}',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.black54,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             Text(
                               isFree ? "FREE" : "BOOKED",
                               style: TextStyle(
@@ -147,7 +188,10 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
           ),
         ),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Colors.black54),
+        ),
       ],
     );
   }
@@ -197,8 +241,7 @@ class SlotSelectionScreen extends GetView<BookParkingController> {
                       ),
                     ],
                   ),
-                if (!controller.isCalculatedTotalAvailable)
-                  const Spacer(),
+                if (!controller.isCalculatedTotalAvailable) const Spacer(),
                 ElevatedButton(
                   onPressed: hasSelection ? () => Get.back() : null,
                   style: ElevatedButton.styleFrom(
