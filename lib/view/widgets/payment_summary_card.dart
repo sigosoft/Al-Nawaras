@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n.dart';
+import '../../utils/amount_utils.dart';
 
 class PaymentSummaryCard extends StatelessWidget {
   final double width;
@@ -138,8 +139,8 @@ class PaymentSummaryCard extends StatelessWidget {
 
   String _calculateTotal(String subtotal, String vat) {
     try {
-      final sub = double.parse(subtotal.replaceAll(RegExp(r'[^0-9.]'), ''));
-      final v = double.parse(vat.replaceAll(RegExp(r'[^0-9.]'), ''));
+      final sub = AmountUtils.parse(subtotal)!;
+      final v = AmountUtils.parse(vat)!;
       return 'AED ${(sub + v).toStringAsFixed(2)}';
     } catch (e) {
       return subtotal;

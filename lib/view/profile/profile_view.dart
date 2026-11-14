@@ -10,6 +10,7 @@ import '../widgets/profile_header.dart';
 import '../widgets/membership_status_card.dart';
 import '../widgets/profile_menu_item.dart';
 import '../widgets/draggable_help_button.dart';
+import '../widgets/status_bar_scrim.dart';
 import '../../controller/home_controller.dart';
 import '../../controller/logout_controller.dart';
 import '../../controller/additional_services_controller.dart';
@@ -96,6 +97,8 @@ class ProfileView extends StatelessWidget {
                   ),
                 ),
                 const DraggableHelpButton(),
+                // Same red as the profile header.
+                const StatusBarScrim(color: Color.fromARGB(234, 227, 6, 6)),
               ],
             );
           }),

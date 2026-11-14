@@ -2,6 +2,7 @@ import 'package:al_nawaras/view/payment/payment_success_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../generated/l10n.dart';
+import '../../utils/amount_utils.dart';
 import '../widgets/payment_summary_card.dart';
 import '../widgets/payment_method_item.dart';
 import '../widgets/custom_logos.dart';
@@ -304,8 +305,8 @@ class _PaymentViewState extends State<PaymentView> {
 
                   try {
                     // 1. Get Numerical Amount & Currency
-                    String priceDigits = totalStr.replaceAll(RegExp(r'[^0-9.]'), '');
-                    double numericAmount = double.tryParse(priceDigits) ?? 0.0;
+                    // Reads "AED 150.00" and "د.إ 150.00" alike.
+                    double numericAmount = AmountUtils.parse(totalStr) ?? 0.0;
                     
                     // Robust currency detection: Look for 3-letter currency codes (AED, EGP, etc.)
                     // Fallback to 'AED' since this is a UAE-based app (RTA Parking)
@@ -384,8 +385,8 @@ class _PaymentViewState extends State<PaymentView> {
 
   String _calculateTotal(BuildContext context, String subtotal, String vat) {
     try {
-      final sub = double.parse(subtotal.replaceAll(RegExp(r'[^0-9.]'), ''));
-      final v = double.parse(vat.replaceAll(RegExp(r'[^0-9.]'), ''));
+      final sub = AmountUtils.parse(subtotal)!;
+      final v = AmountUtils.parse(vat)!;
       return '${S.of(context).currency} ${(sub + v).toStringAsFixed(2)}';
     } catch (e) {
       return subtotal;

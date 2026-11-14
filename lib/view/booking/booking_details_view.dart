@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n.dart';
+import '../../utils/amount_utils.dart';
 
 class BookingDetailsView extends StatelessWidget {
   final Map<String, dynamic> booking;
@@ -158,7 +159,7 @@ class BookingDetailsView extends StatelessWidget {
                           context,
                           Icons.add_circle_outline,
                           S.of(context).extraAmount,
-                          'AED ${booking['extra_amount']}',
+                          '${S.of(context).currency.trim()} ${AmountUtils.format(booking['extra_amount'])}',
                         ),
                       ],
                     ],

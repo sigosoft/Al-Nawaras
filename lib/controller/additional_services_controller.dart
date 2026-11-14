@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'base_client.dart';
 import '../config/api_constants.dart';
+import '../utils/amount_utils.dart';
 import '../generated/l10n.dart';
 
 class AdditionalServicesController extends GetxController {
@@ -63,7 +64,7 @@ class AdditionalServicesController extends GetxController {
               'image': _getServiceImage(title),
               'description':
                   s['description'] ?? S.of(Get.context!).noDescriptionAvailable,
-              'price': '${S.of(Get.context!).currency} ${s['price'] ?? '0'}',
+              'price': '${S.of(Get.context!).currency} ${AmountUtils.format(s['price'])}',
             };
           }).toList();
         }

@@ -918,11 +918,19 @@ class _SelectParkingViewState extends State<SelectParkingView> {
 
   void _showCustomSnackBar(String message, {bool isError = false}) {
     if (!mounted) return;
+    // Show it near the top, over the map, so it doesn't cover the selected
+    // slot's details or the Confirm button at the bottom.
+    final mq = MediaQuery.of(context);
+    final bottom = (mq.size.height - mq.padding.top - 230).clamp(
+      16.0,
+      double.infinity,
+    );
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: isError ? _Design.red : const Color(0xFF2ECC71),
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.fromLTRB(16, 0, 16, bottom),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         content: Text(
           message,

@@ -23,6 +23,8 @@ import '../view/settings/maintenance.dart';
 import '../config/api_constants.dart';
 import '../utils/date_utils.dart';
 import '../utils/api_labels.dart';
+import '../utils/amount_utils.dart';
+import '../utils/vehicle_images.dart';
 import 'base_client.dart';
 import 'dart:math' as math;
 
@@ -288,7 +290,7 @@ class HomeController extends GetxController {
                         imageVal.isNotEmpty &&
                         imageVal != "false")
                     ? imageVal
-                    : 'lib/assets/images/Airstream.png',
+                    : VehicleImages.forType(v['vehicle_type_name']?.toString()),
               };
             }).toList();
             vehicleOffset = allVehicles.length;
@@ -337,7 +339,7 @@ class HomeController extends GetxController {
               } catch (_) {}
 
               if (amount > 0) {
-                displaySub += ' ${S.of(Get.context!).currency.trim()} $amount';
+                displaySub += ' ${S.of(Get.context!).currency.trim()} ${AmountUtils.format(amount)}';
               } else if (a['location'] != null && a['location'] != "false") {
                 displaySub += '-${S.of(Get.context!).spotLabel(a['location'].toString())}';
               }
@@ -488,7 +490,7 @@ class HomeController extends GetxController {
               'startDate': AppDateUtils.formatApiUtc(item['start_date'], fallback: ''),
               'endDate': AppDateUtils.formatApiUtc(item['end_date'], fallback: ''),
               'amount':
-                  '${S.of(Get.context!).currency} ${item['amount'] ?? '0'}',
+                  '${S.of(Get.context!).currency} ${AmountUtils.format(item['amount'])}',
               'isActive': isActive,
               'monthYear': item['month_year'] ?? 'Recent',
               'extra_amount': item['extra_amount'] ?? 0.0,
@@ -587,7 +589,7 @@ class HomeController extends GetxController {
                       imageVal.isNotEmpty &&
                       imageVal != "false")
                   ? imageVal
-                  : 'lib/assets/images/Airstream.png',
+                  : VehicleImages.forType(v['vehicle_type_name']?.toString()),
             };
           }).toList();
 
@@ -703,7 +705,7 @@ class HomeController extends GetxController {
               } catch (_) {}
 
               if (amount > 0) {
-                displaySub += ' ${S.of(Get.context!).currency.trim()} $amount';
+                displaySub += ' ${S.of(Get.context!).currency.trim()} ${AmountUtils.format(amount)}';
               } else if (a['location'] != null && a['location'] != "false") {
                 displaySub += '-${S.of(Get.context!).spotLabel(a['location'].toString())}';
               }

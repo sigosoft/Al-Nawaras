@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'dart:convert';
 import '../../controller/home_controller.dart';
 import '../widgets/draggable_help_button.dart';
+import '../widgets/status_bar_scrim.dart';
 import '../widgets/custom_no_data.dart';
 import '../../generated/l10n.dart';
 
@@ -342,6 +343,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const DraggableHelpButton(),
+              const StatusBarScrim(),
             ],
           ),
         );

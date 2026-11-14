@@ -9,6 +9,8 @@ import 'package:get_storage/get_storage.dart';
 import '../config/api_constants.dart';
 import '../utils/date_utils.dart';
 import '../utils/slot_size_utils.dart';
+import '../utils/amount_utils.dart';
+import '../utils/vehicle_images.dart';
 import '../generated/l10n.dart';
 import 'base_client.dart';
 
@@ -148,7 +150,7 @@ class BookParkingController extends GetxController {
 
   String getVehicleImage(String? typeName) {
     // Mapping based on common names or defaults
-    return 'lib/assets/images/Airstream.png';
+    return VehicleImages.forType(typeName);
   }
 
   // Populated from /parking/types
@@ -933,8 +935,8 @@ class BookParkingController extends GetxController {
 
   /// Returns true if the calculated total is greater than 0
   bool get isCalculatedTotalAvailable {
-    final amt = calculatedTotal.replaceAll(RegExp(r'[^0-9.]'), '');
-    final val = double.tryParse(amt) ?? 0.0;
+    final amt = AmountUtils.parse(calculatedTotal);
+    final val = amt ?? 0.0;
     return val > 0;
   }
 

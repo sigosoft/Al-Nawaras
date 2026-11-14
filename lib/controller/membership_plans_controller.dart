@@ -6,6 +6,7 @@ import '../generated/l10n.dart';
 import 'base_client.dart';
 import '../view/payment/payment_view.dart';
 import '../config/api_constants.dart';
+import '../utils/amount_utils.dart';
 
 class MembershipPlansController extends GetxController {
   List<Map<String, dynamic>> plans = [];
@@ -57,7 +58,8 @@ class MembershipPlansController extends GetxController {
             return {
               'id': m['id'],
               'title': m['plan_type'] ?? S.of(Get.context!).standardPlan,
-              'price': 'AED ${m['plan_price']}',
+              // Kept as "AED": the payment screen parses this string back.
+              'price': 'AED ${AmountUtils.format(m['plan_price'])}',
               'unit': m['duration'] ?? S.of(Get.context!).month,
               'period': m['duration']?.toString().toLowerCase() ?? 'month',
               'features': features,
